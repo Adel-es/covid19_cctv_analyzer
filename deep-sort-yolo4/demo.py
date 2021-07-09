@@ -9,6 +9,8 @@ import cv2
 import numpy as np
 from PIL import Image
 from yolo import YOLO
+from distance import checkDistance
+from distance import getCentroid
 
 from deep_sort import preprocessing
 from deep_sort import nn_matching
@@ -66,7 +68,15 @@ def main(yolo):
         ret, frame = video_capture.read()  # frame shape 640*480*3
         if ret != True:
              break
-
+        
+        # for test
+        # if frame_index < 300:
+        #     frame_index = frame_index + 1
+        #     continue
+        # if frame_index > 1100:
+        #     break
+        # for test
+        
         t1 = time.time()
 
         image = Image.fromarray(frame[...,::-1])  # bgr to rgb
@@ -87,6 +97,7 @@ def main(yolo):
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
 
+        people_list = []
         if tracking:
             # Call the tracker
             tracker.predict()
@@ -99,6 +110,7 @@ def main(yolo):
                 cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (255, 255, 255), 2)
                 cv2.putText(frame, "ID: " + str(track.track_id), (int(bbox[0]), int(bbox[1])), 0,
                             1.5e-3 * frame.shape[0], (0, 255, 0), 1)
+                people_list.append((bbox, track.track_id))
 
         for det in detections:
             bbox = det.to_tlbr()
@@ -109,7 +121,25 @@ def main(yolo):
                 cv2.putText(frame, str(cls) + " " + score, (int(bbox[0]), int(bbox[3])), 0,
                             1.5e-3 * frame.shape[0], (0, 255, 0), 1)
 
-        cv2.imshow('', frame)
+        # Find confirmed case (will be replaced with re-identification)
+        i = 0
+        for person in people_list:
+            bbox, id = person
+            if id == 23:
+                confirmed_case = person
+                break
+            i = i + 1
+        
+        # Distance filtering
+        if i < len(people_list): # If confirmed case is found
+            close_people = checkDistance(people_list, confirmed_case)
+            # Mark close people
+            c_stand_point = getCentroid(bbox=confirmed_case[0], return_int=True)
+            for person in close_people:
+                stand_point = getCentroid(bbox=person[0], return_int=True)
+                cv2.line(frame, c_stand_point, stand_point, (0, 0, 255), 2)
+        
+        # cv2.imshow('', frame)
 
         if writeVideo_flag: # and not asyncVideo_flag:
             # save a frame
