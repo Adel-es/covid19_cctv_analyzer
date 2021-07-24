@@ -19,10 +19,37 @@ from tools import generate_detections as gdet
 import imutils.video
 from videocaptureasync import VideoCaptureAsync
 
+import os, sys
+from absl.testing.absltest import main
+# 상위 디렉토리 절대 경로 추가
+# ../JCW/covid19_cctv_analyzer
+root_path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(root_path)
+sys.path.append(root_path + '/top-dropblock')
+from main import config_for_topdb, run_top_db_test                  # config_for_topdb()
+from torchreid.engine import engine
+
 warnings.filterwarnings('ignore')
 
-def main(yolo):
+from gpuinfo import GPUInfo
+import torch
+import gc
 
+from multiprocessing import Process, Manager
+# import multiprocessing as mp
+# useMultiProcessing = True
+# def run_topdb(gallery, top_db_engine, top_db_cfg):
+#     run_top_db_test(gallery_data=gallery, engine=top_db_engine, cfg=top_db_cfg)
+
+manager = Manager()
+shm_bbox = manager.list()
+
+def main():
+    yolo = YOLO()
+    print(" * main start * ") 
+    print(GPUInfo.get_users(1))
+    GPUInfo.get_info()
+    # exit(0)
     # Definition of the parameters
     max_cosine_distance = 0.3
     nn_budget = None
@@ -62,16 +89,26 @@ def main(yolo):
     fps = 0.0
     fps_imutils = imutils.video.FPS().start()
 
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1, 2, 3, 4"
+    # top_db_engine, top_db_cfg = config_for_topdb( root_path )
+    cam_id = 0;     # 임의로 cam_no 정의
+    frame_no = -1   # 임의로 frame_no 정의
+    
     while True:
         ret, frame = video_capture.read()  # frame shape 640*480*3
         if ret != True:
-             break
-
+            break
+        frame_no += 1 # frame no 부여
+        if frame_no == 30: # test용: 5번만 test해보기
+            break
+        # gallery = []
+        # cv2.imwrite('tempData/frame/'+str(frame_no)+'.jpg', frame)
+        
         t1 = time.time()
 
         image = Image.fromarray(frame[...,::-1])  # bgr to rgb
-        boxes, confidence, classes = yolo.detect_image(image)
-
+        boxes, confidence, classes = yolo.detect_image(image) ### useYOLO
+        
         if tracking:
             features = encoder(frame, boxes)
 
@@ -87,6 +124,7 @@ def main(yolo):
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
 
+        
         if tracking:
             # Call the tracker
             tracker.predict()
@@ -99,7 +137,30 @@ def main(yolo):
                 cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (255, 255, 255), 2)
                 cv2.putText(frame, "ID: " + str(track.track_id), (int(bbox[0]), int(bbox[1])), 0,
                             1.5e-3 * frame.shape[0], (0, 255, 0), 1)
+                
+                # gallery_image = frame[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])] # frame[y:y+h , x:x+w]
+                
+                # cv2.imwrite('tempData/'+str(track.track_id)
+                #             +'_'+str(frame_no)
+                #             +'_'+str(cam_id)+'.jpg', gallery_image)
+                # gallery.append((gallery_image, track.track_id, cam_id))
+                boundary_box = (int(bbox[1]),int(bbox[3]), int(bbox[0]),int(bbox[2])) # frame[y:y+h , x:x+w]
+                shm_bbox.append((boundary_box, track.track_id, frame_no, cam_id))
 
+        # print(gallery)
+        # torch.cuda.empty_cache()
+        # print(" * right before test * ") 
+        # GPUInfo.get_users(1)        
+        # GPUInfo.get_info()
+        # if useMultiProcessing:
+        #     p = ctx.Process(target=run_topdb, args=(gallery, top_db_engine, top_db_cfg))
+        #     # p = Process(target=run_topdb, args=(gallery, top_db_engine, top_db_cfg))
+        #     p.start()
+        #     p.join()
+        # else:
+        # print(torch.cuda.is_available())
+        # run_top_db_test(gallery_data=gallery, engine=top_db_engine, cfg=top_db_cfg)
+        
         for det in detections:
             bbox = det.to_tlbr()
             score = "%.2f" % round(det.confidence * 100, 2) + "%"
@@ -109,7 +170,7 @@ def main(yolo):
                 cv2.putText(frame, str(cls) + " " + score, (int(bbox[0]), int(bbox[3])), 0,
                             1.5e-3 * frame.shape[0], (0, 255, 0), 1)
 
-        cv2.imshow('', frame)
+        #cv2.imshow('', frame)
 
         if writeVideo_flag: # and not asyncVideo_flag:
             # save a frame
@@ -126,6 +187,12 @@ def main(yolo):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+    # gc.collect()
+    # torch.cuda.empty_cache()
+    # print(" * after frame loop * ") 
+    # GPUInfo.get_users(1)
+    # GPUInfo.get_info()
+    
     fps_imutils.stop()
     print('imutils FPS: {}'.format(fps_imutils.fps()))
 
@@ -139,5 +206,17 @@ def main(yolo):
 
     cv2.destroyAllWindows()
 
+
 if __name__ == '__main__':
-    main(YOLO())
+    p = Process(target=main)
+    p.start()
+    p.join()
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    top_db_engine, top_db_cfg = config_for_topdb( root_path )
+    
+    # run_top_db_test(gallery_data=gallery, engine=top_db_engine, cfg=top_db_cfg)
+    run_top_db_test(engine=top_db_engine, cfg=top_db_cfg, shm_bbox=shm_bbox)
+    
+
+    

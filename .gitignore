@@ -1,0 +1,161 @@
+# etc files
+multiprocess_test
+original_file
+gpu_usage_check.py
+
+# deep-sort-yolo4
+deep-sort-yolo4/model_data/yolo4.h5
+deep-sort-yolo4/model_data/yolov4.weights  
+deep-sort-yolo4/tempData
+deep-sort-yolo4/log
+
+# top-dropblock
+top-dropblock/reid-datasets
+top-dropblock/tmp
+top-dropblock/.ptconfig
+top-dropblock/.vscode
+top-dropblock/.ptignore
+top-dropblock/pt-config
+top-dropblock/pt
+top-dropblock/data
+
+# Byte-compiled / optimized / DLL files
+top-dropblock/__pycache__/
+top-dropblock/*.py[cod]
+top-dropblock/*$py.class
+
+# C extensions
+top-dropblock/*.so
+
+# Distribution / packaging
+top-dropblock/.Python
+top-dropblock/build/
+top-dropblock/develop-eggs/
+top-dropblock/dist/
+top-dropblock/downloads/
+top-dropblock/eggs/
+top-dropblock/.eggs/
+top-dropblock/lib/
+top-dropblock/lib64/
+top-dropblock/parts/
+top-dropblock/sdist/
+top-dropblock/var/
+top-dropblock/wheels/
+top-dropblock/pip-wheel-metadata/
+top-dropblock/share/python-wheels/
+top-dropblock/*.egg-info/
+top-dropblock/.installed.cfg
+top-dropblock/*.egg
+top-dropblock/MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+top-dropblock/*.manifest
+top-dropblock/*.spec
+
+# Installer logs
+top-dropblock/pip-log.txt
+top-dropblock/pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+top-dropblock/htmlcov/
+top-dropblock/.tox/
+top-dropblock/.nox/
+top-dropblock/.coverage
+top-dropblock/.coverage.*
+top-dropblock/.cache
+top-dropblock/nosetests.xml
+top-dropblock/coverage.xml
+top-dropblock/*.cover
+top-dropblock/.hypothesis/
+top-dropblock/.pytest_cache/
+
+# Translations
+top-dropblock/*.mo
+top-dropblock/*.pot
+
+# Django stuff:
+top-dropblock/*.log
+top-dropblock/local_settings.py
+top-dropblock/db.sqlite3
+
+# Flask stuff:
+top-dropblock/instance/
+top-dropblock/.webassets-cache
+
+# Scrapy stuff:
+top-dropblock/.scrapy
+
+# Sphinx documentation
+top-dropblock/docs/_build/
+
+# PyBuilder
+top-dropblock/target/
+
+# Jupyter Notebook
+top-dropblock/.ipynb_checkpoints
+
+# IPython
+top-dropblock/profile_default/
+top-dropblock/ipython_config.py
+
+# pyenv
+top-dropblock/.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# celery beat schedule file
+top-dropblock/celerybeat-schedule
+
+# SageMath parsed files
+top-dropblock/*.sage.py
+
+# Environments
+top-dropblock/.env
+top-dropblock/.venv
+top-dropblock/env/
+top-dropblock/venv/
+top-dropblock/ENV/
+top-dropblock/env.bak/
+top-dropblock/venv.bak/
+
+# Spyder project settings
+top-dropblock/.spyderproject
+top-dropblock/.spyproject
+
+# Rope project settings
+top-dropblock/.ropeproject
+
+# mkdocs documentation
+top-dropblock//site
+
+# mypy
+top-dropblock/.mypy_cache/
+top-dropblock/.dmypy.json
+top-dropblock/dmypy.json
+
+# Pyre type checker
+top-dropblock/.pyre/
+
+# Cython eval code
+top-dropblock/*.c
+top-dropblock/*.html
+
+# OS X
+top-dropblock/.DS_Store
+top-dropblock/.Spotlight-V100
+top-dropblock/.Trashes
+top-dropblock/._*
+
+# ReID
+top-dropblock/reid-data/
+top-dropblock/log/
+top-dropblock/saved-models/
+top-dropblock/model-zoo/
+top-dropblock/debug*
