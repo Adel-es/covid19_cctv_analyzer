@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division, print_function, absolute_import
+from multiprocessing import Process, Manager
 
 from timeit import time
 import warnings
@@ -11,6 +12,7 @@ from PIL import Image
 from yolo import YOLO
 from distance import checkDistance
 from distance import getCentroid
+from collections import Counter # for test
 
 from deep_sort import preprocessing
 from deep_sort import nn_matching
@@ -23,73 +25,55 @@ from videocaptureasync import VideoCaptureAsync
 
 warnings.filterwarnings('ignore')
 
-def main(yolo):
+input_video_path = 'OxfordTownCentreDataset.avi'
+output_video_path = 'output_yolov4.avi'
+start_frame = 300
+end_frame = 900
+
+class TrackResult:
+    def __init__(self, bbox, tid):
+        self.bbox = bbox
+        self.tid = tid
+
+def detectAndTrack(trackingRslt):
+    # Get detection model
+    yolo = YOLO()
 
     # Definition of the parameters
     max_cosine_distance = 0.3
     nn_budget = None
     nms_max_overlap = 1.0
     
-    # Deep SORT
+    # Get tracker (Deep SORT)
     model_filename = 'model_data/mars-small128.pb'
     encoder = gdet.create_box_encoder(model_filename, batch_size=1)
-    
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
     tracker = Tracker(metric)
 
-    tracking = True
-    writeVideo_flag = True
-    asyncVideo_flag = False
-
-    file_path = 'video.webm'
-    if asyncVideo_flag :
-        video_capture = VideoCaptureAsync(file_path)
-    else:
-        video_capture = cv2.VideoCapture(file_path)
-
-    if asyncVideo_flag:
-        video_capture.start()
-
-    if writeVideo_flag:
-        if asyncVideo_flag:
-            w = int(video_capture.cap.get(3))
-            h = int(video_capture.cap.get(4))
-        else:
-            w = int(video_capture.get(3))
-            h = int(video_capture.get(4))
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter('output_yolov4.avi', fourcc, 30, (w, h))
-        frame_index = -1
-
-    fps = 0.0
-    fps_imutils = imutils.video.FPS().start()
-
+    # Prepare input videovideo_path
+    video_capture = cv2.VideoCapture(input_video_path)
+    frame_index = -1
+    
     while True:
-        ret, frame = video_capture.read()  # frame shape 640*480*3
+        ret, frame = video_capture.read()
         if ret != True:
-             break
+            break
         
         # for test
-        # if frame_index < 300:
-        #     frame_index = frame_index + 1
-        #     continue
-        # if frame_index > 1100:
-        #     break
+        frame_index += 1
+        if frame_index < start_frame:
+            continue
+        if frame_index > end_frame:
+            break
         # for test
-        
-        t1 = time.time()
 
         image = Image.fromarray(frame[...,::-1])  # bgr to rgb
         boxes, confidence, classes = yolo.detect_image(image)
 
-        if tracking:
-            features = encoder(frame, boxes)
+        features = encoder(frame, boxes)
 
-            detections = [Detection(bbox, confidence, cls, feature) for bbox, confidence, cls, feature in
-                          zip(boxes, confidence, classes, features)]
-        else:
-            detections = [Detection_YOLO(bbox, confidence, cls) for bbox, confidence, cls in
-                          zip(boxes, confidence, classes)]
+        detections = [Detection(bbox, confidence, cls, feature) for bbox, confidence, cls, feature in
+                        zip(boxes, confidence, classes, features)]
 
         # Run non-maxima suppression.
         boxes = np.array([d.tlwh for d in detections])
@@ -97,77 +81,129 @@ def main(yolo):
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
 
-        people_list = []
-        if tracking:
-            # Call the tracker
-            tracker.predict()
-            tracker.update(detections)
+        # Call the tracker
+        tracker.predict()
+        tracker.update(detections)
 
-            for track in tracker.tracks:
-                if not track.is_confirmed() or track.time_since_update > 1:
-                    continue
-                bbox = track.to_tlbr()
-                cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (255, 255, 255), 2)
-                cv2.putText(frame, "ID: " + str(track.track_id), (int(bbox[0]), int(bbox[1])), 0,
-                            1.5e-3 * frame.shape[0], (0, 255, 0), 1)
-                people_list.append((bbox, track.track_id))
-
-        for det in detections:
-            bbox = det.to_tlbr()
-            score = "%.2f" % round(det.confidence * 100, 2) + "%"
-            cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (255, 0, 0), 2)
-            if len(classes) > 0:
-                cls = det.cls
-                cv2.putText(frame, str(cls) + " " + score, (int(bbox[0]), int(bbox[3])), 0,
-                            1.5e-3 * frame.shape[0], (0, 255, 0), 1)
-
-        # Find confirmed case (will be replaced with re-identification)
-        i = 0
-        for person in people_list:
-            bbox, id = person
-            if id == 23:
-                confirmed_case = person
-                break
-            i = i + 1
+        aFrameTracking = []
+        for track in tracker.tracks:
+            if not track.is_confirmed() or track.time_since_update > 1:
+                continue
+            bbox = track.to_tlbr()
+            aFrameTracking.append( TrackResult(bbox, track.track_id) )
         
-        # Distance filtering
-        if i < len(people_list): # If confirmed case is found
-            close_people = checkDistance(people_list, confirmed_case)
-            # Mark close people
-            c_stand_point = getCentroid(bbox=confirmed_case[0], return_int=True)
-            for person in close_people:
-                stand_point = getCentroid(bbox=person[0], return_int=True)
-                cv2.line(frame, c_stand_point, stand_point, (0, 0, 255), 2)
-        
-        # cv2.imshow('', frame)
-
-        if writeVideo_flag: # and not asyncVideo_flag:
-            # save a frame
-            out.write(frame)
-            frame_index = frame_index + 1
-
-        fps_imutils.update()
-
-        if not asyncVideo_flag:
-            fps = (fps + (1./(time.time()-t1))) / 2
-            print("FPS = %f"%(fps))
-        
-        # Press Q to stop!
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    fps_imutils.stop()
-    print('imutils FPS: {}'.format(fps_imutils.fps()))
-
-    if asyncVideo_flag:
-        video_capture.stop()
+        trackingRslt.append(aFrameTracking)
+    # end of while()
+    
+    video_capture.release()
+    
+    
+def fakeReid(trackingRslt, reidRslt):
+    # Find most frequent tid(person) in video frames
+    idList = []
+    for aFrameTracking in trackingRslt:
+        for idx, person in enumerate(aFrameTracking):
+            idList.append(person.tid)
+    if len(idList) == 0:
+        print("Nobody in this video: {}".format(input_video_path))
+        print("Tracking result: {}".format(trackingRslt))
+        confirmed_id = -1
     else:
-        video_capture.release()
+        confirmed_id = Counter(idList).most_common(n=1)[0][0]
+    
+    # Fill in the reidRslt
+    for aFrameTracking in trackingRslt:
+        confirmed_idx = -1
+        for idx, person in enumerate(aFrameTracking):
+            if person.tid == confirmed_id:
+                confirmed_idx = idx
+                break
+        reidRslt.append(confirmed_idx)
 
-    if writeVideo_flag:
-        out.release()
-
-    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    main(YOLO())
+    startTime = time.time()
+    with Manager() as manager:
+        # 공유 객체 생성
+        tracking = manager.list()
+        reid = manager.list()
+        distance = manager.list()
+        
+        # 프로세스 실행 (영상 단위 처리)
+        detectTrackProc = Process(target=detectAndTrack, args=(tracking, ))
+        reidProc = Process(target=fakeReid, args=(tracking, reid))
+        distanceProc = Process(target=checkDistance, args=(tracking, reid, distance))
+        
+        detectTrackProc.start()
+        detectTrackProc.join()
+        
+        reidProc.start()
+        reidProc.join()
+        
+        distanceProc.start()
+        distanceProc.join()
+        
+        
+        # ==== UI ====
+        # Prepare input video
+        video_capture = cv2.VideoCapture(input_video_path)
+        frame_index = -1
+        
+        # Prepare output video
+        w = int(video_capture.get(3))
+        h = int(video_capture.get(4))
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        out = cv2.VideoWriter(output_video_path, fourcc, 30, (w, h))
+        
+        # for test
+        while True:
+            if start_frame == 0:
+                break
+            ret, frame = video_capture.read()
+            frame_index += 1
+            if ret != True:
+                break
+            if frame_index < start_frame-1:
+                continue
+            elif frame_index == start_frame-1:
+                break
+            else:
+                print("Frame capture error! Check start_frame and end_frame: {}, {}".format(start_frame, end_frame))
+        # for test
+        
+        for aFrameTracking, aFrameReid, aFrameDistance in zip(tracking, reid, distance):
+            ret, frame = video_capture.read()
+            frame_index += 1
+            if ret != True:
+                break
+            # for test
+            if frame_index > end_frame:
+                break
+            # for test
+            
+            # Draw detection and tracking result for a frame
+            TEXT_UP_FROM_BBOX = 2
+            for person in aFrameTracking:
+                cv2.rectangle(frame, (int(person.bbox[0]), int(person.bbox[1])), (int(person.bbox[2]), int(person.bbox[3])), (255, 255, 255), 2)
+                cv2.putText(frame, "ID: " + str(person.tid), (int(person.bbox[0]), int(person.bbox[1])-TEXT_UP_FROM_BBOX), 0,
+                            8e-4 * frame.shape[0], (0, 255, 0), 3)
+            
+            if aFrameReid != -1: # if there is confirmed case
+                # Draw red bbox for confirmed case
+                confirmed = aFrameTracking[aFrameReid]
+                cv2.rectangle(frame, (int(confirmed.bbox[0]), int(confirmed.bbox[1])), (int(confirmed.bbox[2]), int(confirmed.bbox[3])), (0, 0, 255), 2)
+                cv2.putText(frame, "ID: " + str(confirmed.tid), (int(confirmed.bbox[0]), int(confirmed.bbox[1])-TEXT_UP_FROM_BBOX), 0,
+                            8e-4 * frame.shape[0], (0, 0, 255), 3)
+                
+                # Draw distance result for a frame
+                c_stand_point = getCentroid(bbox=confirmed.bbox, return_int=True)
+                for idx, is_close in enumerate(aFrameDistance):
+                    if not is_close:
+                        continue
+                    closePerson = aFrameTracking[idx]
+                    stand_point = getCentroid(bbox=closePerson.bbox, return_int=True)
+                    cv2.line(frame, c_stand_point, stand_point, (0, 0, 255), 2)
+                
+            out.write(frame)
+        out.release()
+        print("수행 시간:", time.time() - startTime)
