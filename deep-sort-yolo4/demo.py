@@ -206,4 +206,4 @@ if __name__ == '__main__':
                 
             out.write(frame)
         out.release()
-        print("수행 시간:", time.time() - startTime)
+        print("Runing time:", time.time() - startTime)
