@@ -23,6 +23,16 @@ from tools import generate_detections as gdet
 import imutils.video
 from videocaptureasync import VideoCaptureAsync
 
+import os, sys
+from absl.testing.absltest import main
+# 상위 디렉토리 절대 경로 추가
+# ../JCW/covid19_cctv_analyzer
+root_path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(root_path)
+sys.path.append(root_path + '/top-dropblock')
+from main import config_for_topdb, run_top_db_test                  # config_for_topdb()
+from torchreid.engine import engine
+
 warnings.filterwarnings('ignore')
 
 input_video_path = 'OxfordTownCentreDataset.avi'
@@ -39,6 +49,21 @@ def detectAndTrack(trackingRslt):
     # Get detection model
     yolo = YOLO()
 
+
+class TrackResult:
+    def __init__(self, bbox, tid):
+        self.bbox = bbox
+        self.tid = tid
+    
+manager = Manager()
+tracking_list = manager.list()
+
+def main():
+    yolo = YOLO()
+    print(" * main start * ") 
+    print(GPUInfo.get_users(1))
+    GPUInfo.get_info()
+    # exit(0)
     # Definition of the parameters
     max_cosine_distance = 0.3
     nn_budget = None
@@ -58,7 +83,7 @@ def detectAndTrack(trackingRslt):
         ret, frame = video_capture.read()
         if ret != True:
             break
-        
+
         # for test
         frame_index += 1
         if frame_index < start_frame:
@@ -81,6 +106,7 @@ def detectAndTrack(trackingRslt):
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
 
+
         # Call the tracker
         tracker.predict()
         tracker.update(detections)
@@ -89,7 +115,7 @@ def detectAndTrack(trackingRslt):
         for track in tracker.tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
-            bbox = track.to_tlbr()
+            bbox = track.to_tlbr() # frame[y:y+h , x:x+w], bbox: (min_x, min_y, max_x, max_y)
             aFrameTracking.append( TrackResult(bbox, track.track_id) )
         
         trackingRslt.append(aFrameTracking)

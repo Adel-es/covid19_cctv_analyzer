@@ -1,0 +1,37 @@
+model:
+  name: 'nodropnet_neck'
+  load_weights: 'log/nodropnet_neck_market1501_triplet_dropbatch_0/best_model.pth.tar'
+
+data:
+  type: 'image'
+  sources: ['market1501']
+  targets: ['market1501']
+  height: 384
+  width: 128
+  combineall: False
+  transforms: ['random_flip', 'random_crop', 'random_erase']
+  save_dir: 'log/nodropnet_neck_market1501_triplet_dropbatch_0'
+
+cuhk03:
+  labeled_images: False
+
+sampler:
+  train_sampler: 'RandomIdentitySampler'
+
+  loss:
+  name: 'triplet_dropbatch'
+
+test:
+  batch_size: 600
+  dist_metric: 'euclidean'
+  normalize_feature: False
+  evaluate: True
+  eval_freq: 60
+  rerank: False
+  visactmap: False
+  visrank: False
+  visrankactiv: False
+  visrank_topk: 5
+  visrankactivthr: True
+  maskthr: 0.35
+

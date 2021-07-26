@@ -1,0 +1,35 @@
+model:
+  name: 'top_bdnet_neck_botdropfeat_doubot'
+  load_weights: 'log/top_bdnet_neck_botdropfeat_doubot_market1501_triplet_dropbatch_dropbotfeatures_topdrop_0/model.pth.tar-400'
+  
+  
+data:
+  type: 'image'
+  sources: ['market1501']
+  targets: ['market1501']
+  height: 384
+  width: 128
+  combineall: False
+  transforms: ['random_flip', 'random_crop', 'random_erase']
+  save_dir: 'log/top_bdnet_neck_botdropfeat_doubot_market1501_triplet_dropbatch_dropbotfeatures_topdrop_0/'
+
+cuhk03:
+  labeled_images: False
+
+sampler:
+  train_sampler: 'RandomIdentitySampler'
+
+test:
+  batch_size: 1 #300
+  dist_metric: 'cosine' #'euclidean'
+  normalize_feature: False
+  evaluate: True # test_only option
+  eval_freq: 30
+  rerank: True
+  visactmap: False
+  visrank: False
+  visrankactiv: False
+  visrank_topk: 5
+  visrankactivthr: False
+  maskthr: 0.35
+

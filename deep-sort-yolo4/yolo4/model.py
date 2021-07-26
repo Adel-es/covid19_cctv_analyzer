@@ -13,6 +13,7 @@ from keras.models import Model
 from keras.regularizers import l2
 
 from yolo4.utils import compose
+from gpuinfo import GPUInfo
 
 class Mish(Layer):
     '''
