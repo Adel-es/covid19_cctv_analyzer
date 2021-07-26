@@ -248,9 +248,9 @@ def main_concat_with_track( config_file_path, data_root_path ):
         load_pretrained_weights(model, cfg.model.load_weights)
     
     if cfg.use_gpu:
-        device = torch.device("cuda:3")
-        model = nn.DataParallel(model).to(device)
-        # model = nn.DataParallel(model).cuda()
+        # device = torch.device("cuda:3")
+        # model = nn.DataParallel(model).to(device)
+        model = nn.DataParallel(model).cuda()
 
     optimizer = torchreid.optim.build_optimizer(model, **optimizer_kwargs(cfg))
     scheduler = torchreid.optim.build_lr_scheduler(optimizer, **lr_scheduler_kwargs(cfg))
@@ -271,7 +271,7 @@ def read_gallery_image():
     # gallery_img_path = [ gallery_dir_path + i for i in ["01.PNG", "002.PNG"] ]
     
     # gallery_dir_path = "/home/gram/JCW/covid19_cctv_analyzer/top-dropblock/data/tempDataset/bounding_box_test/"
-    gallery_dir_path = "/home/gram/JCW/covid19_cctv_analyzer/deep-sort-yolo4/tempData/"
+    gallery_dir_path = "/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/tempDataset/gallery/"
     
     gallery_img_path = [ gallery_dir_path + i for i in os.listdir(gallery_dir_path)]
     gallery_img_path = glob.glob(osp.join(gallery_dir_path, '*.jpg'))
@@ -292,9 +292,9 @@ def config_for_topdb(root_path):
     data_root_path = root_path + "/top-dropblock/data"
     return main_concat_with_track(config_file_path, data_root_path)
 
-# def run_top_db_test(gallery_data, engine, cfg):
-#     # os.environ["CUDA_VISIBLE_DEVICES"] = "1, 2, 3"
-#     engine.test_only(gallery_data = gallery_data, **engine_test_kwargs(cfg))
+def _run_top_db_test(gallery_data, engine, cfg):
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "1, 2, 3"
+    engine.test_only(gallery_data = gallery_data, **engine_test_kwargs(cfg))
 
 # def run_top_db_test(engine, cfg):
 #     # os.environ["CUDA_VISIBLE_DEVICES"] = "1, 2, 3"
@@ -305,7 +305,7 @@ def crop_frame_image(frame, bbox):
     return Image.fromarray(frame).crop( (int(bbox[2]),int(bbox[0]), int(bbox[3]),int(bbox[1])) ) # (start_x, start_y, start_x + width, start_y + height) 
     # return frame[ int(bbox[0]):int(bbox[1]), int(bbox[2]):int(bbox[3]) ] # frame[y:y+h , x:x+w]
     
-def run_top_db_test(engine, cfg, shm_bbox):
+def run_top_db_test(engine, cfg, tracking_list):
     # os.environ["CUDA_VISIBLE_DEVICES"] = "1, 2, 3"
     writeVideo_flag = True
     asyncVideo_flag = False
@@ -338,45 +338,49 @@ def run_top_db_test(engine, cfg, shm_bbox):
     cam_id = 0;     # 임의로 cam_no 정의
     frame_no = 0   # 임의로 frame_no 정의
     
-    ret, frame = video_capture.read()  # frame shape 640*480*3
-    gallery_data = []
-    for bbox_info in shm_bbox:
-        if frame_no == 30: # test용: 5번만 test해보기
+    reid_tracking = []
+    while True:
+        ret, frame = video_capture.read()  # frame shape 640*480*3
+        if ret != True:
             break
-        if bbox_info[2] > frame_no:
-            # evaluate person-reid
-            if len(gallery_data) > 0:
-                matching_qid_distance = engine.test_only(gallery_data = gallery_data, **engine_test_kwargs(cfg))
-                # query와 동일한 사람을 찾은 결과를 받아서
-                # 결과 사진을 jpg로 저장함.
-                for ri in matching_qid_distance: # ri = (query pid, query pid에 매칭되는 gallery data의 1st index)
-                    foundImage = gallery_data[ri[1]][0]
-                    g_pid = gallery_data[ri[1]][1]
-                    cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/equal_query/'
-                            +str(g_pid)+'_qid_'+str(ri[0])+'.jpg', #gpid_qpid.jpg
-                            np.asarray(foundImage, dtype=np.uint8) )
-                gallery_data = []        
-            # capture next frame
-            ret, frame = video_capture.read()  # frame shape 640*480*3
-            if ret != True:
-                break
-            frame_no += 1 # frame no 부여
-            continue
+        frame_no += 1 # frame no 부여
+        if frame_no == 60: # test용: 5번만 test해보기
+            break
         
-        if bbox_info[2] == frame_no:
-            # bbox = bbox_info[0]
-            # cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/webcam/'
-            #             +str(bbox_info[1])+'_'+str(bbox_info[2])+'.jpg', 
-            #             frame[bbox[0]:bbox[1], bbox[2]:bbox[3]] )
-            # crop image from frame
-            crop_image = crop_frame_image(frame, bbox_info[0])
-            gallery_data.append( (crop_image, bbox_info[1], bbox_info[3]) ) # (image, pid, camid)
-    
+        # frame에 사람이 없다면 pass
+        if len(tracking_list[frame_no]) == 0: continue
+        
+        # frame에 있는 사람들 사진을 수집
+        gallery = []
+        for image_info in tracking_list[frame_no]:
+            image_bbox = image_info.bbox                  # bounding box
+            image_tid = image_info.tid                   # track id
+            image = crop_frame_image(frame, image_bbox) # PIL type
+            gallery.append( (image, image_tid, cam_id) )
+        
+        # reid 수행
+        reid_result = engine.test_only(gallery_data = gallery, **engine_test_kwargs(cfg)) # top1의 index
+        reid_tracking.append([reid_result])
+        # # 결과 확인용 - top1의 사진 출력
+        # if reid_result != -1:
+        #     crop_image = crop_frame_image(frame, tracking_list[frame_no][reid_result].bbox)
+        #     cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/equal_query/'
+        #             +str( tracking_list[frame_no][reid_result].tid )+'_'+str(frame_no)+'.jpg', #gpid_frameno.jpg
+        #             np.asarray( crop_image , dtype=np.uint8) )
+        # 결과 확인용 - top1의 사진 출력
+        if reid_result != []:
+            for reid in reid_result:
+                crop_image = crop_frame_image(frame, tracking_list[frame_no][reid[0]].bbox)
+                # cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/equal_query/'
+                cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/deep-sort-yolo4/tempData/equalquery/'
+                        +str( tracking_list[frame_no][reid[0]].tid )+'_'+str(reid[1])+'_'+str(frame_no)+'.jpg', #gpid_qpid_frameno.jpg
+                        np.asarray( crop_image , dtype=np.uint8) )
+        
         if writeVideo_flag: # and not asyncVideo_flag:
             # save a frame
             out.write(frame)
             frame_index = frame_index + 1
-
+            
         fps_imutils.update()
         
     fps_imutils.stop()
@@ -395,5 +399,5 @@ if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     engine, cfg = config_for_topdb("../")
     gallery_data = read_gallery_image() # type : [(img, pid, camid), ...]
-    run_top_db_test(gallery_data, engine, cfg)
+    _run_top_db_test(gallery_data, engine, cfg)
     # main()

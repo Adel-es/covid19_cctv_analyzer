@@ -41,8 +41,13 @@ from multiprocessing import Process, Manager
 # def run_topdb(gallery, top_db_engine, top_db_cfg):
 #     run_top_db_test(gallery_data=gallery, engine=top_db_engine, cfg=top_db_cfg)
 
+class TrackResult:
+    def __init__(self, bbox, tid):
+        self.bbox = bbox
+        self.tid = tid
+    
 manager = Manager()
-shm_bbox = manager.list()
+tracking_list = manager.list()
 
 def main():
     yolo = YOLO()
@@ -99,10 +104,8 @@ def main():
         if ret != True:
             break
         frame_no += 1 # frame no 부여
-        if frame_no == 30: # test용: 5번만 test해보기
+        if frame_no == 60: # test용: 5번만 test해보기
             break
-        # gallery = []
-        # cv2.imwrite('tempData/frame/'+str(frame_no)+'.jpg', frame)
         
         t1 = time.time()
 
@@ -124,7 +127,7 @@ def main():
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
 
-        
+        tracking_frame_list = []
         if tracking:
             # Call the tracker
             tracker.predict()
@@ -145,8 +148,9 @@ def main():
                 #             +'_'+str(cam_id)+'.jpg', gallery_image)
                 # gallery.append((gallery_image, track.track_id, cam_id))
                 boundary_box = (int(bbox[1]),int(bbox[3]), int(bbox[0]),int(bbox[2])) # frame[y:y+h , x:x+w]
-                shm_bbox.append((boundary_box, track.track_id, frame_no, cam_id))
-
+                tracking_frame_list.append( TrackResult(boundary_box, track.track_id) )
+                
+        tracking_list.append(tracking_frame_list)
         # print(gallery)
         # torch.cuda.empty_cache()
         # print(" * right before test * ") 
@@ -212,11 +216,11 @@ if __name__ == '__main__':
     p.start()
     p.join()
 
+    # CUDA_VISIBLE_DEVICES를 0으로 설정하지 않으면 topdb 돌릴 때 아래와 같은 err가 뜬다 ㅠㅠ
+    # TypeError: forward() missing 1 required positional argument: 'x'
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     top_db_engine, top_db_cfg = config_for_topdb( root_path )
-    
-    # run_top_db_test(gallery_data=gallery, engine=top_db_engine, cfg=top_db_cfg)
-    run_top_db_test(engine=top_db_engine, cfg=top_db_cfg, shm_bbox=shm_bbox)
+    run_top_db_test(engine=top_db_engine, cfg=top_db_cfg, tracking_list=tracking_list)
     
 
     

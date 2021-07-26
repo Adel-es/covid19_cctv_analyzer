@@ -2,6 +2,8 @@
 multiprocess_test
 original_file
 gpu_usage_check.py
+.vscode
+test
 
 # deep-sort-yolo4
 deep-sort-yolo4/model_data/yolo4.h5

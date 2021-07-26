@@ -739,7 +739,7 @@ class Engine(object):
         # query_dir_path = "/home/gram/JCW/covid19_cctv_analyzer/top-dropblock/data/query/"
         # query_img_path = ["01.PNG", "002.PNG"]
         
-        # query_dir_path = "/home/gram/JCW/covid19_cctv_analyzer/top-dropblock/data/tempDataset/query/"
+        # query_dir_path = "/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/tempDataset/query/"
         query_dir_path = "/home/gram/JCW/covid19_cctv_analyzer_multi_proc/deep-sort-yolo4/tempData/query/"
         query_img_path = os.listdir(query_dir_path)
         print("Num of query set: ", len(query_img_path))
@@ -755,6 +755,8 @@ class Engine(object):
             # GPUInfo.get_users(1)
             # GPUInfo.get_info()
             if self.use_gpu:
+                # device = torch.device("cuda:3")
+                # imgs = imgs.to(device)
                 imgs = imgs.cuda()
             end = time.time()
             features = self._extract_features(imgs)
@@ -791,6 +793,7 @@ class Engine(object):
             
             if self.use_gpu:
                 imgs = imgs.cuda()
+                
             end = time.time()
             features = self._extract_features(imgs)
             activations = self._extract_activations(imgs)
@@ -821,14 +824,52 @@ class Engine(object):
         distmat = metrics.compute_distance_matrix(qf, gf, dist_metric)
         distmat = distmat.numpy()
 
+
         # distmat을 점수에 따라 sorting
         num_q, num_g = distmat.shape # 5, 36
-
+        #### print distmat top1~10
+        mean_top1 = []
+        mean_top2 = []
         dist_indices = np.argsort(distmat, axis=1)
-        dist_indices = np.transpose(dist_indices)
-        print(" * 1st dist calc; ", distmat)
-        matching_qid_distance = [(q_id, dist_idx) for q_id, dist_idx in zip(q_pids, dist_indices[0])]
+        if dist_metric == 'cosine':
+            dist_indices = dist_indices[:, ::-1]
             
+        result = open("/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/frame_res_6.txt", "a")
+        dist_sorting = np.sort(distmat, axis=1)
+        if dist_metric == 'cosine':
+            dist_sorting = dist_sorting[:, ::-1]
+        for dist in dist_sorting:
+            mean_top1.append(dist[0])
+            mean_top2.append(dist[1])
+            print(" * dist sorting; ", dist[:10]) 
+            result.write(" * dist sorting; {}\n".format(dist[:10])) 
+            
+        print("mean_top1: ", sum(mean_top1)/len(mean_top1))
+        print("mean_top2: ", sum(mean_top2)/len(mean_top2))
+        result.write("mean_top1: {}\n".format(sum(mean_top1)/len(mean_top1)))
+        result.write("mean_top2: {}\n".format(sum(mean_top2)/len(mean_top2)))
+        
+        # matches = (g_pids[dist_indices] == q_pids[:, np.newaxis]).astype(np.int32)
+        # distmat_sort = np.sort(distmat, axis=1)
+        # total_mean = []
+        # total_max = []
+        # for i, match in enumerate(matches):
+        #     equal_dist = (distmat_sort[i]*match)[:20] # top20 중에서 query == gallery인 것들의 dist값 필터링
+        #     mean_dist = sum(equal_dist)/sum(match) # 위 dist들의 mean값을 구함
+        #     total_mean.append(mean_dist)
+        #     total_max.append(np.max(equal_dist))
+        #     # print("matchng: {}, mean = {}".format(equal_dist, mean_dist ) )
+        # print("matching Total mean: ", sum(total_mean)/len(total_mean))
+        # print("matching Total max of mean ", max(total_mean))
+        # print("matching Total max of equal (not for mean) ", max(total_max))
+        # print("matching Total mean of max", sum(total_max)/len(total_max))
+        
+        for nq in range(num_q):
+            print(" * Query PID #{}'s ranking :".format(q_pids[nq]), g_pids[dist_indices][nq][:15])
+            result.write(" * Query PID #{}'s ranking :{}\n".format(q_pids[nq], g_pids[dist_indices][nq][:15]))
+            
+        result.close()
+        
         #always show results without re-ranking first
         print('Computing CMC and mAP ...')
         cmc, mAP = metrics.evaluate_rank(
@@ -852,6 +893,13 @@ class Engine(object):
             distmat_qq = metrics.compute_distance_matrix(qf, qf, dist_metric)
             distmat_gg = metrics.compute_distance_matrix(gf, gf, dist_metric)
             distmat = re_ranking(distmat, distmat_qq, distmat_gg)
+            
+            #### print distmat for top1~10s
+            # dist_indices = np.argsort(distmat, axis=1)
+            # dist_indices = np.transpose(dist_indices)
+            # for dist in np.sort(distmat, axis=1):
+            #     print(" * dist sorting; ", dist[:10]) 
+                
             print('Computing CMC and mAP ...')
             cmc, mAP = metrics.evaluate_rank(
                 distmat,
@@ -920,5 +968,7 @@ class Engine(object):
                 topk=visrank_topk
             )
 
-        return matching_qid_distance
+        dist_indices = np.transpose(dist_indices) # qn X gn
+        return [ (i, j) for i, j in zip(dist_indices[0], q_pids) ] # query 의 top1의 index
+        # return dist_indices[0][0] # query0 의 top1의 index
         # return cmc[0]
