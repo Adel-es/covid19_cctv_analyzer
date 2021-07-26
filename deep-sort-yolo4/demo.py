@@ -24,21 +24,20 @@ import imutils.video
 from videocaptureasync import VideoCaptureAsync
 
 import os, sys
-from absl.testing.absltest import main
 # 상위 디렉토리 절대 경로 추가
 # ../JCW/covid19_cctv_analyzer
 root_path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(root_path)
 sys.path.append(root_path + '/top-dropblock')
-from main import config_for_topdb, run_top_db_test                  # config_for_topdb()
-from torchreid.engine import engine
+from main import config_for_topdb, run_top_db_test
 
 warnings.filterwarnings('ignore')
 
-input_video_path = 'OxfordTownCentreDataset.avi'
+# input_video_path = 'OxfordTownCentreDataset.avi'
+input_video_path = 'video.webm'
 output_video_path = 'output_yolov4.avi'
-start_frame = 300
-end_frame = 900
+start_frame = 0
+end_frame = 30
 
 class TrackResult:
     def __init__(self, bbox, tid):
@@ -49,21 +48,6 @@ def detectAndTrack(trackingRslt):
     # Get detection model
     yolo = YOLO()
 
-
-class TrackResult:
-    def __init__(self, bbox, tid):
-        self.bbox = bbox
-        self.tid = tid
-    
-manager = Manager()
-tracking_list = manager.list()
-
-def main():
-    yolo = YOLO()
-    print(" * main start * ") 
-    print(GPUInfo.get_users(1))
-    GPUInfo.get_info()
-    # exit(0)
     # Definition of the parameters
     max_cosine_distance = 0.3
     nn_budget = None
@@ -83,7 +67,7 @@ def main():
         ret, frame = video_capture.read()
         if ret != True:
             break
-
+        
         # for test
         frame_index += 1
         if frame_index < start_frame:
@@ -106,7 +90,6 @@ def main():
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
 
-
         # Call the tracker
         tracker.predict()
         tracker.update(detections)
@@ -115,9 +98,8 @@ def main():
         for track in tracker.tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
-            bbox = track.to_tlbr() # frame[y:y+h , x:x+w], bbox: (min_x, min_y, max_x, max_y)
+            bbox = track.to_tlbr()
             aFrameTracking.append( TrackResult(bbox, track.track_id) )
-        
         trackingRslt.append(aFrameTracking)
     # end of while()
     
@@ -146,6 +128,13 @@ def fakeReid(trackingRslt, reidRslt):
                 break
         reidRslt.append(confirmed_idx)
 
+def personReid(trackingRslt, reidRslt):
+    # CUDA_VISIBLE_DEVICES를 0으로 설정하지 않으면 topdb 돌릴 때 아래와 같은 err가 뜬다
+    # TypeError: forward() missing 1 required positional argument: 'x'
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    top_db_engine, top_db_cfg = config_for_topdb( root_path )
+    run_top_db_test(engine=top_db_engine, cfg=top_db_cfg, start_frame=start_frame, end_frame=end_frame, tracking_list=trackingRslt, reid_list=reidRslt)
+    # 지금 reidRslt에서 확진자가 없는 경우(-1)는 나오지 않는다. (reid 정확성 문제 때문에)
 
 if __name__ == '__main__':
     startTime = time.time()
@@ -157,7 +146,7 @@ if __name__ == '__main__':
         
         # 프로세스 실행 (영상 단위 처리)
         detectTrackProc = Process(target=detectAndTrack, args=(tracking, ))
-        reidProc = Process(target=fakeReid, args=(tracking, reid))
+        reidProc = Process(target=personReid, args=(tracking, reid))
         distanceProc = Process(target=checkDistance, args=(tracking, reid, distance))
         
         detectTrackProc.start()

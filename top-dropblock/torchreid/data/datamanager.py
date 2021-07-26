@@ -9,6 +9,14 @@ from torchreid.data.transforms import build_transforms
 from torchreid.data.datasets import init_image_dataset, init_video_dataset
 from torchreid.data.datasets.dataset import QueryImageDatasetForConcat
 
+import os
+# 상위 디렉토리 절대 경로 추가
+# ~/covid19_cctv_analyzer
+root_path = os.path.dirname(
+    os.path.abspath(os.path.dirname(
+        os.path.abspath(os.path.dirname(
+            os.path.abspath(os.path.dirname(__file__)))))))
+
 class DataManager(object):
     r"""Base data manager.
 
@@ -169,10 +177,11 @@ class ImageDataManager(DataManager):
         self.testdataset = {name: {'query': None, 'gallery': None} for name in self.targets}
 
         for name in self.targets:
+            
             # build query loader
             queryset = QueryImageDatasetForConcat(
-                    img_file = "/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/query/01.PNG",
-                    root_dir = "/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/query",
+                    img_file = root_path + "/deep-sort-yolo4/tempData/query/1_2_0.jpg",
+                    root_dir = root_path + "/deep-sort-yolo4/tempData/query",
                     transform = self.transform_te
                 )
             # queryset = init_image_dataset(

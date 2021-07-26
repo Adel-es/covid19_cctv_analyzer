@@ -30,6 +30,10 @@ VECT_HEIGTH = 10
 
 from gpuinfo import GPUInfo
 
+# 상위 디렉토리 절대 경로 추가
+# ~/covid19_cctv_analyzer
+root_path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+
 class Engine(object):
     r"""A generic base Engine class for both image- and video-reid.
 
@@ -736,11 +740,7 @@ class Engine(object):
         print('Extracting features from query set ...')
         qf, qa, q_pids, q_camids, qm = [], [], [], [], [] # query features, query activations, query person IDs, query camera IDs and image drop masks
 
-        # query_dir_path = "/home/gram/JCW/covid19_cctv_analyzer/top-dropblock/data/query/"
-        # query_img_path = ["01.PNG", "002.PNG"]
-        
-        # query_dir_path = "/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/tempDataset/query/"
-        query_dir_path = "/home/gram/JCW/covid19_cctv_analyzer_multi_proc/deep-sort-yolo4/tempData/query/"
+        query_dir_path = root_path + "/deep-sort-yolo4/tempData/query/"
         query_img_path = os.listdir(query_dir_path)
         print("Num of query set: ", len(query_img_path))
         for img_path in query_img_path:
@@ -760,11 +760,8 @@ class Engine(object):
                 imgs = imgs.cuda()
             end = time.time()
             features = self._extract_features(imgs)
-            # print(features)
             activations = self._extract_activations(imgs)
-            # print(activations)
             dropmask = self._extract_drop_masks(imgs, visdrop, visdroptype)
-            # print(dropmask)
             batch_time.update(time.time() - end)
             features = features.data.cpu()
             qf.append(features)
@@ -781,7 +778,6 @@ class Engine(object):
         print('Done, obtained {}-by-{} matrix'.format(qf.size(0), qf.size(1)))
         
         print('Extracting features from gallery set ...')
-        print("Num of gallery set: ", len(gallery_data))
         gf, ga, g_pids, g_camids, gm = [], [], [], [], [] # gallery features, gallery activations,  gallery person IDs, gallery camera IDs and image drop masks
         end = time.time()
         for data in gallery_data:
@@ -833,22 +829,25 @@ class Engine(object):
         dist_indices = np.argsort(distmat, axis=1)
         if dist_metric == 'cosine':
             dist_indices = dist_indices[:, ::-1]
-            
-        result = open("/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/frame_res_6.txt", "a")
-        dist_sorting = np.sort(distmat, axis=1)
-        if dist_metric == 'cosine':
-            dist_sorting = dist_sorting[:, ::-1]
-        for dist in dist_sorting:
-            mean_top1.append(dist[0])
-            mean_top2.append(dist[1])
-            print(" * dist sorting; ", dist[:10]) 
-            result.write(" * dist sorting; {}\n".format(dist[:10])) 
-            
-        print("mean_top1: ", sum(mean_top1)/len(mean_top1))
-        print("mean_top2: ", sum(mean_top2)/len(mean_top2))
-        result.write("mean_top1: {}\n".format(sum(mean_top1)/len(mean_top1)))
-        result.write("mean_top2: {}\n".format(sum(mean_top2)/len(mean_top2)))
         
+        # result = open("/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/frame_res_6.txt", "a")
+        
+        # # Distance 값 관찰 1 - top10의 distance값 출력, top10의 gid들 출력
+        # dist_sorting = np.sort(distmat, axis=1)
+        # if dist_metric == 'cosine':
+        #     dist_sorting = dist_sorting[:, ::-1]
+        # for dist in dist_sorting:
+        #     mean_top1.append(dist[0])
+        #     mean_top2.append(dist[1])
+        #     print(" * dist sorting; ", dist[:10]) 
+        #     result.write(" * dist sorting; {}\n".format(dist[:10])) 
+            
+        # print("mean_top1: ", sum(mean_top1)/len(mean_top1))
+        # print("mean_top2: ", sum(mean_top2)/len(mean_top2))
+        # result.write("mean_top1: {}\n".format(sum(mean_top1)/len(mean_top1)))
+        # result.write("mean_top2: {}\n".format(sum(mean_top2)/len(mean_top2)))
+
+        # # Distance 값 관찰 2 - top10의 distance값 출력, top10의 gid들 출력        
         # matches = (g_pids[dist_indices] == q_pids[:, np.newaxis]).astype(np.int32)
         # distmat_sort = np.sort(distmat, axis=1)
         # total_mean = []
@@ -864,22 +863,23 @@ class Engine(object):
         # print("matching Total max of equal (not for mean) ", max(total_max))
         # print("matching Total mean of max", sum(total_max)/len(total_max))
         
-        for nq in range(num_q):
-            print(" * Query PID #{}'s ranking :".format(q_pids[nq]), g_pids[dist_indices][nq][:15])
-            result.write(" * Query PID #{}'s ranking :{}\n".format(q_pids[nq], g_pids[dist_indices][nq][:15]))
+        # # top10의 gid들 출력  
+        # for nq in range(num_q):
+        #     print(" * Query PID #{}'s ranking :".format(q_pids[nq]), g_pids[dist_indices][nq][:15])
+        #     result.write(" * Query PID #{}'s ranking :{}\n".format(q_pids[nq], g_pids[dist_indices][nq][:15]))
             
-        result.close()
+        # result.close()
         
-        #always show results without re-ranking first
-        print('Computing CMC and mAP ...')
-        cmc, mAP = metrics.evaluate_rank(
-            distmat,
-            q_pids,
-            g_pids,
-            q_camids,
-            g_camids,
-            use_metric_cuhk03=use_metric_cuhk03
-        )
+        # #always show results without re-ranking first
+        # print('Computing CMC and mAP ...')
+        # cmc, mAP = metrics.evaluate_rank(
+        #     distmat,
+        #     q_pids,
+        #     g_pids,
+        #     q_camids,
+        #     g_camids,
+        #     use_metric_cuhk03=use_metric_cuhk03
+        # )
 
         # print('** Results **')
         # print('mAP: {:.1%}'.format(mAP))
@@ -888,11 +888,11 @@ class Engine(object):
         #     for r in ranks:
         #         print('Rank-{:<3}: {:.1%}'.format(r, cmc[r-1]))
 
-        if rerank:
-            print('Applying person re-ranking ...')
-            distmat_qq = metrics.compute_distance_matrix(qf, qf, dist_metric)
-            distmat_gg = metrics.compute_distance_matrix(gf, gf, dist_metric)
-            distmat = re_ranking(distmat, distmat_qq, distmat_gg)
+        # if rerank:
+        #     print('Applying person re-ranking ...')
+        #     distmat_qq = metrics.compute_distance_matrix(qf, qf, dist_metric)
+        #     distmat_gg = metrics.compute_distance_matrix(gf, gf, dist_metric)
+        #     distmat = re_ranking(distmat, distmat_qq, distmat_gg)
             
             #### print distmat for top1~10s
             # dist_indices = np.argsort(distmat, axis=1)
@@ -900,15 +900,15 @@ class Engine(object):
             # for dist in np.sort(distmat, axis=1):
             #     print(" * dist sorting; ", dist[:10]) 
                 
-            print('Computing CMC and mAP ...')
-            cmc, mAP = metrics.evaluate_rank(
-                distmat,
-                q_pids,
-                g_pids,
-                q_camids,
-                g_camids,
-                use_metric_cuhk03=use_metric_cuhk03
-            )
+            # print('Computing CMC and mAP ...')
+            # cmc, mAP = metrics.evaluate_rank(
+            #     distmat,
+            #     q_pids,
+            #     g_pids,
+            #     q_camids,
+            #     g_camids,
+            #     use_metric_cuhk03=use_metric_cuhk03
+            # )
 
             # print('** Results with Re-Ranking**')
             # print('mAP: {:.1%}'.format(mAP))
@@ -968,7 +968,16 @@ class Engine(object):
                 topk=visrank_topk
             )
 
-        dist_indices = np.transpose(dist_indices) # qn X gn
-        return [ (i, j) for i, j in zip(dist_indices[0], q_pids) ] # query 의 top1의 index
+        top_1_indices = np.transpose(dist_indices)[0]
+        
+        # 가장 많이 나타난 gallery id를 counting
+        top1_gpids = np.transpose(g_pids[dist_indices])[0]
+        top1_gpids_bincount = np.bincount(top1_gpids) # top1 gallery ids를 오름차순 정렬 후, 빈도수를 반환.
+        top1_gpid = top1_gpids_bincount.argmax() # 가장 빈도수가 높은 gallery id를 가져옴
+        return top1_gpid
+        
+        # dist_indices = np.transpose(dist_indices) # qn X gn
+        # return [ (i, j) for i, j in zip(dist_indices[0], q_pids) ] # query 의 top1의 index
+        
         # return dist_indices[0][0] # query0 의 top1의 index
         # return cmc[0]

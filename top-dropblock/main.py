@@ -305,7 +305,7 @@ def crop_frame_image(frame, bbox):
     return Image.fromarray(frame).crop( (int(bbox[2]),int(bbox[0]), int(bbox[3]),int(bbox[1])) ) # (start_x, start_y, start_x + width, start_y + height) 
     # return frame[ int(bbox[0]):int(bbox[1]), int(bbox[2]):int(bbox[3]) ] # frame[y:y+h , x:x+w]
     
-def run_top_db_test(engine, cfg, tracking_list):
+def run_top_db_test(engine, cfg, start_frame, end_frame, tracking_list, reid_list):
     # os.environ["CUDA_VISIBLE_DEVICES"] = "1, 2, 3"
     writeVideo_flag = True
     asyncVideo_flag = False
@@ -336,19 +336,22 @@ def run_top_db_test(engine, cfg, tracking_list):
     # os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1, 2, 3, 4"
     # top_db_engine, top_db_cfg = config_for_topdb( root_path )
     cam_id = 0;     # 임의로 cam_no 정의
-    frame_no = 0   # 임의로 frame_no 정의
+    frame_no = -1   # 임의로 frame_no 정의
     
-    reid_tracking = []
     while True:
         ret, frame = video_capture.read()  # frame shape 640*480*3
         if ret != True:
             break
         frame_no += 1 # frame no 부여
-        if frame_no == 60: # test용: 5번만 test해보기
+        if frame_index < start_frame:
+            continue
+        if frame_index > end_frame:
             break
         
         # frame에 사람이 없다면 pass
-        if len(tracking_list[frame_no]) == 0: continue
+        if len(tracking_list[frame_no]) == 0: 
+            reid_list.append(-1)
+            continue
         
         # frame에 있는 사람들 사진을 수집
         gallery = []
@@ -359,22 +362,29 @@ def run_top_db_test(engine, cfg, tracking_list):
             gallery.append( (image, image_tid, cam_id) )
         
         # reid 수행
-        reid_result = engine.test_only(gallery_data = gallery, **engine_test_kwargs(cfg)) # top1의 index
-        reid_tracking.append([reid_result])
+        top1_gpid = engine.test_only(gallery_data = gallery, **engine_test_kwargs(cfg)) # top1의 index
+        top1_index = -1
+        # top1 gallery의 index 탐색
+        for idx, image_info in enumerate(tracking_list[frame_no]):
+            if image_info.tid == top1_gpid:
+                top1_index = idx
+                break
+        reid_list.append(top1_index)
         # # 결과 확인용 - top1의 사진 출력
         # if reid_result != -1:
         #     crop_image = crop_frame_image(frame, tracking_list[frame_no][reid_result].bbox)
         #     cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/equal_query/'
         #             +str( tracking_list[frame_no][reid_result].tid )+'_'+str(frame_no)+'.jpg', #gpid_frameno.jpg
         #             np.asarray( crop_image , dtype=np.uint8) )
+
         # 결과 확인용 - top1의 사진 출력
-        if reid_result != []:
-            for reid in reid_result:
-                crop_image = crop_frame_image(frame, tracking_list[frame_no][reid[0]].bbox)
-                # cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/equal_query/'
-                cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/deep-sort-yolo4/tempData/equalquery/'
-                        +str( tracking_list[frame_no][reid[0]].tid )+'_'+str(reid[1])+'_'+str(frame_no)+'.jpg', #gpid_qpid_frameno.jpg
-                        np.asarray( crop_image , dtype=np.uint8) )
+        # if reid_result != []:
+        #     for reid in reid_result:
+        #         crop_image = crop_frame_image(frame, tracking_list[frame_no][reid[0]].bbox)
+        #         # cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/equal_query/'
+        #         cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/deep-sort-yolo4/tempData/equalquery/'
+        #                 +str( tracking_list[frame_no][reid[0]].tid )+'_'+str(reid[1])+'_'+str(frame_no)+'.jpg', #gpid_qpid_frameno.jpg
+        #                 np.asarray( crop_image , dtype=np.uint8) )
         
         if writeVideo_flag: # and not asyncVideo_flag:
             # save a frame
@@ -393,7 +403,6 @@ def run_top_db_test(engine, cfg, tracking_list):
 
     if writeVideo_flag:
         out.release()
-
 
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"

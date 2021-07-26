@@ -21,7 +21,7 @@ sampler:
 
 test:
   batch_size: 1 #300
-  dist_metric: 'cosine' #'euclidean'
+  dist_metric: 'euclidean'
   normalize_feature: False
   evaluate: True # test_only option
   eval_freq: 30
