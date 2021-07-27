@@ -151,9 +151,11 @@ if __name__ == '__main__':
         
         detectTrackProc.start()
         detectTrackProc.join()
+        print(" * Tracking list : ", tracking)
         
         reidProc.start()
         reidProc.join()
+        print(" * reid list : ", reid)
         
         distanceProc.start()
         distanceProc.join()
