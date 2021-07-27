@@ -201,7 +201,7 @@ if __name__ == '__main__':
                 print("Frame capture error! Check start_frame and end_frame: {}, {}".format(start_frame, end_frame))
         # for test
         
-        for aFrameTracking, aFrameReid, aFrameDistance in zip(tracking, reid, distance):
+        for aFrameTracking, aFrameReid, aFrameDistance, aFrameMask in zip(tracking, reid, distance, mask):
             ret, frame = video_capture.read()
             frame_index += 1
             if ret != True:
@@ -214,16 +214,16 @@ if __name__ == '__main__':
             # Draw detection and tracking result for a frame
             TEXT_UP_FROM_BBOX = 2
             for person in aFrameTracking:
-                cv2.rectangle(frame, (int(person.bbox[0]), int(person.bbox[1])), (int(person.bbox[2]), int(person.bbox[3])), (255, 255, 255), 2)
+                cv2.rectangle(frame, (int(person.bbox[0]), int(person.bbox[1])), (int(person.bbox[2]), int(person.bbox[3])), (255, 255, 255), 2) #white 
                 cv2.putText(frame, "ID: " + str(person.tid), (int(person.bbox[0]), int(person.bbox[1])-TEXT_UP_FROM_BBOX), 0,
-                            8e-4 * frame.shape[0], (0, 255, 0), 3)
+                            8e-4 * frame.shape[0], (0, 255, 0), 3) #green 
             
             if aFrameReid != -1: # if there is confirmed case
                 # Draw red bbox for confirmed case
                 confirmed = aFrameTracking[aFrameReid]
                 cv2.rectangle(frame, (int(confirmed.bbox[0]), int(confirmed.bbox[1])), (int(confirmed.bbox[2]), int(confirmed.bbox[3])), (0, 0, 255), 2)
                 cv2.putText(frame, "ID: " + str(confirmed.tid), (int(confirmed.bbox[0]), int(confirmed.bbox[1])-TEXT_UP_FROM_BBOX), 0,
-                            8e-4 * frame.shape[0], (0, 0, 255), 3)
+                            8e-4 * frame.shape[0], (0, 0, 255), 3) #red 
                 
                 # Draw distance result for a frame
                 c_stand_point = getCentroid(bbox=confirmed.bbox, return_int=True)
@@ -232,8 +232,17 @@ if __name__ == '__main__':
                         continue
                     closePerson = aFrameTracking[idx]
                     stand_point = getCentroid(bbox=closePerson.bbox, return_int=True)
-                    cv2.line(frame, c_stand_point, stand_point, (0, 0, 255), 2)
-            
+                    cv2.line(frame, c_stand_point, stand_point, (0, 0, 255), 2) #red 
+
+                for idx, is_masked in enumerate(aFrameMask) : 
+                    if is_masked == MaskToken.NotNear : 
+                        continue 
+                    elif is_masked == MaskToken.NotMasked : 
+                        person = aFrameTracking[idx]
+                        cv2.rectangle(frame, (int(person.bbox[0]+5), int(person.bbox[1]+5)), (int(person.bbox[2]-5), int(person.bbox[3]-5)), (127, 127, 255), 2) #pink
+                    elif is_masked == MaskToken.Masked : 
+                        person = aFrameTracking[idx]
+                        cv2.rectangle(frame, (int(person.bbox[0]+5), int(person.bbox[1]+5)), (int(person.bbox[2]-5), int(person.bbox[3]-5)), (127, 255, 127), 2) #yellowgreen 
             out.write(frame)
         
         out.release()
