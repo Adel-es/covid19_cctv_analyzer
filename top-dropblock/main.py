@@ -223,17 +223,17 @@ def main_concat_with_track( config_file_path, data_root_path ):
     log_name += time.strftime('-%Y-%m-%d-%H-%M-%S')
     sys.stdout = Logger(osp.join(cfg.data.save_dir, log_name))
     
-    print('Show configuration\n{}\n'.format(cfg))
-    print('Collecting env info ...')
-    print('** System info **\n{}\n'.format(collect_env_info()))
+    # print('Show configuration\n{}\n'.format(cfg))
+    # print('Collecting env info ...')
+    # print('** System info **\n{}\n'.format(collect_env_info()))
     
     if cfg.use_gpu:
         torch.backends.cudnn.benchmark = True
     
     datamanager = build_datamanager(cfg)
     
-    print(type(datamanager))
-    print('Building model: {}'.format(cfg.model.name))
+    # print(type(datamanager))
+    # print('Building model: {}'.format(cfg.model.name))
     model = torchreid.models.build_model(
         name=cfg.model.name,
         num_classes=datamanager.num_train_pids, # class 종류 개수를 특정할 수 있나?
@@ -242,7 +242,7 @@ def main_concat_with_track( config_file_path, data_root_path ):
         use_gpu=cfg.use_gpu
     )
     num_params, flops = compute_model_complexity(model, (1, 3, cfg.data.height, cfg.data.width))
-    print('Model complexity: params={:,} flops={:,}'.format(num_params, flops))
+    # print('Model complexity: params={:,} flops={:,}'.format(num_params, flops))
 
     if cfg.model.load_weights and check_isfile(cfg.model.load_weights):
         load_pretrained_weights(model, cfg.model.load_weights)
@@ -258,19 +258,12 @@ def main_concat_with_track( config_file_path, data_root_path ):
     # if cfg.model.resume and check_isfile(cfg.model.resume):
     #     args.start_epoch = resume_from_checkpoint(cfg.model.resume, model, optimizer=optimizer)
 
-    print('Building {}-engine for {}-reid'.format(cfg.loss.name, cfg.data.type))
+    # print('Building {}-engine for {}-reid'.format(cfg.loss.name, cfg.data.type))
     engine = build_engine(cfg, datamanager, model, optimizer, scheduler)
 
     return engine, cfg
-    # gallery_data = read_gallery_image() # type : [(img, pid, camid), ...]
-    
-    # engine.test_only(gallery_data = gallery_data, **engine_test_kwargs(cfg))
 
 def read_gallery_image():
-    # gallery_dir_path = "/home/gram/JCW/covid19_cctv_analyzer/top-dropblock/data/query/"
-    # gallery_img_path = [ gallery_dir_path + i for i in ["01.PNG", "002.PNG"] ]
-    
-    # gallery_dir_path = "/home/gram/JCW/covid19_cctv_analyzer/top-dropblock/data/tempDataset/bounding_box_test/"
     gallery_dir_path = "/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/tempDataset/gallery/"
     
     gallery_img_path = [ gallery_dir_path + i for i in os.listdir(gallery_dir_path)]
@@ -343,11 +336,12 @@ def run_top_db_test(engine, cfg, start_frame, end_frame, tracking_list, reid_lis
         if ret != True:
             break
         frame_no += 1 # frame no 부여
-        if frame_index < start_frame:
+        if frame_no < start_frame:
             continue
-        if frame_index > end_frame:
+        if frame_no > end_frame:
             break
         
+        print(" reid frame_no : ", frame_no)
         # frame에 사람이 없다면 pass
         if len(tracking_list[frame_no]) == 0: 
             reid_list.append(-1)

@@ -32,7 +32,10 @@ from gpuinfo import GPUInfo
 
 # 상위 디렉토리 절대 경로 추가
 # ~/covid19_cctv_analyzer
-root_path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+root_path = os.path.dirname(
+    os.path.abspath(os.path.dirname(
+        os.path.abspath(os.path.dirname(
+            os.path.abspath(os.path.dirname(__file__)))))))
 
 class Engine(object):
     r"""A generic base Engine class for both image- and video-reid.

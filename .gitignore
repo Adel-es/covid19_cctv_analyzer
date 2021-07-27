@@ -32,6 +32,8 @@ top-dropblock/torchreid/metrics/__pycache__/
 top-dropblock/torchreid/losses/__pycache__/
 top-dropblock/torchreid/engine/video/__pycache__/
 top-dropblock/torchreid/metrics/rank_cylib/__pycache__/
+top-dropblock/torchreid/data/__pycache__/
+top-dropblock/torchreid/engine/__pycache__
 
 
 # C extensions
