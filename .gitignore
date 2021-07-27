@@ -4,6 +4,7 @@ original_file
 gpu_usage_check.py
 .vscode
 test
+*.pyc 
 
 # deep-sort-yolo4
 deep-sort-yolo4/model_data/yolo4.h5
