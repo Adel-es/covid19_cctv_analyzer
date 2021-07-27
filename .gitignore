@@ -8,6 +8,7 @@ test
 # deep-sort-yolo4
 deep-sort-yolo4/model_data/yolo4.h5
 deep-sort-yolo4/model_data/yolov4.weights  
+deep-sort-yolo4/yolov4.weights
 #deep-sort-yolo4/tempData
 deep-sort-yolo4/log
 
@@ -169,3 +170,17 @@ top-dropblock/log/
 top-dropblock/saved-models/
 top-dropblock/model-zoo/
 top-dropblock/debug*
+
+#mask detection
+maskdetect/__pycache__/
+maskdetect/faceDetection/__pycache__/
+maskdetect/maskDetection/__pycache__/
+maskdetect/libs/__pycache__/
+
+#configs 
+configs/__pycache__/
+
+#utils
+utils/__pycache__/
+
+*/__pycache__/*

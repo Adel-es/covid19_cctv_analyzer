@@ -31,18 +31,17 @@ sys.path.append(root_path)
 sys.path.append(root_path + '/top-dropblock')
 from main import config_for_topdb, run_top_db_test
 
+from configs import runInfo
+from utils.types import TrackToken, MaskToken
+from maskdetect.maskDetect import runMaskDetect
+
 warnings.filterwarnings('ignore')
 
 # input_video_path = 'OxfordTownCentreDataset.avi'
-input_video_path = 'video.webm'
-output_video_path = 'output_yolov4.avi'
-start_frame = 0
-end_frame = 30
-
-class TrackResult:
-    def __init__(self, bbox, tid):
-        self.bbox = bbox
-        self.tid = tid
+input_video_path = runInfo.input_video_path
+output_video_path = runInfo.output_video_path
+start_frame = runInfo.start_frame
+end_frame = runInfo.end_frame
 
 def detectAndTrack(trackingRslt):
     # Get detection model
@@ -99,7 +98,7 @@ def detectAndTrack(trackingRslt):
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
             bbox = track.to_tlbr()
-            aFrameTracking.append( TrackResult(bbox, track.track_id) )
+            aFrameTracking.append( TrackToken(bbox, track.track_id) )
         trackingRslt.append(aFrameTracking)
     # end of while()
     
@@ -143,11 +142,14 @@ if __name__ == '__main__':
         tracking = manager.list()
         reid = manager.list()
         distance = manager.list()
+        mask = manager.list()
         
         # 프로세스 실행 (영상 단위 처리)
         detectTrackProc = Process(target=detectAndTrack, args=(tracking, ))
-        reidProc = Process(target=personReid, args=(tracking, reid))
+        reidProc = Process(target=fakeReid, args=(tracking, reid))        
+        # reidProc = Process(target=personReid, args=(tracking, reid))
         distanceProc = Process(target=checkDistance, args=(tracking, reid, distance))
+        maskProc = Process(target=runMaskDetect, args=(tracking, reid, distance, mask))
         
         detectTrackProc.start()
         detectTrackProc.join()
@@ -158,7 +160,19 @@ if __name__ == '__main__':
         distanceProc.start()
         distanceProc.join()
         
+        maskProc.start() 
+        maskProc.join()
         
+        #DEBUG
+        if runInfo.debug : 
+            print("TrackToken : ")
+            print(tracking)
+            print("reidResult : ")
+            print(reid)
+            print("distanceResult : ")
+            print(distance)       
+            print("MaskToken : ")
+            print(mask)
         # ==== UI ====
         # Prepare input video
         video_capture = cv2.VideoCapture(input_video_path)
@@ -168,6 +182,7 @@ if __name__ == '__main__':
         w = int(video_capture.get(3))
         h = int(video_capture.get(4))
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        # fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
         out = cv2.VideoWriter(output_video_path, fourcc, 30, (w, h))
         
         # for test
@@ -218,7 +233,8 @@ if __name__ == '__main__':
                     closePerson = aFrameTracking[idx]
                     stand_point = getCentroid(bbox=closePerson.bbox, return_int=True)
                     cv2.line(frame, c_stand_point, stand_point, (0, 0, 255), 2)
-                
+            
             out.write(frame)
+        
         out.release()
         print("Runing time:", time.time() - startTime)

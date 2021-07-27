@@ -306,6 +306,12 @@ def crop_frame_image(frame, bbox):
     # return frame[ int(bbox[0]):int(bbox[1]), int(bbox[2]):int(bbox[3]) ] # frame[y:y+h , x:x+w]
     
 def run_top_db_test(engine, cfg, start_frame, end_frame, tracking_list, reid_list):
+    #DEBUG
+    print("++++++++++++debug+++++++++++++++++")
+    print(start_frame)
+    print(end_frame)
+    print(tracking_list)
+    print("+++++++++++++++++++++++++++++++++++")
     # os.environ["CUDA_VISIBLE_DEVICES"] = "1, 2, 3"
     writeVideo_flag = True
     asyncVideo_flag = False
