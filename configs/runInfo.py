@@ -1,5 +1,5 @@
 input_video_path = 'video.webm'
 output_video_path = 'output_yolov4.avi'
 start_frame = 0
-end_frame = 200
+end_frame = 2000
 debug = True 

@@ -10,3 +10,4 @@ class MaskToken(Enum) :
     NotMasked = 2 
     FaceNotFound = 3
     NotNear = 4
+    UnKnown = 5 

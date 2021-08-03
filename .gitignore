@@ -11,7 +11,8 @@ deep-sort-yolo4/model_data/yolo4.h5
 deep-sort-yolo4/model_data/yolov4.weights  
 deep-sort-yolo4/yolov4.weights
 #deep-sort-yolo4/tempData
-deep-sort-yolo4/log
+deep-sort-yolo4/log/*
+deep-sort-yolo4/output_yolo4.avi
 
 # top-dropblock
 top-dropblock/reid-datasets

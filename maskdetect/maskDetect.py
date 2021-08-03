@@ -3,6 +3,8 @@ import cv2 as cv
 import numpy as np
 import maskdetect.faceDetection.faceDetector as face
 import maskdetect.maskDetection.maskDetector as mask 
+import libs.votingSystem as vs
+
 
 import sys, os
 root_path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -27,6 +29,7 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
     # outputVideo = runInfo.output_video_path
     startFrame = runInfo.start_frame 
     endFrame = runInfo.end_frame
+    votingSystem = vs.VotingSystem()
 
     outputWriter = None
     faceDetector = face.Detector()
@@ -76,8 +79,27 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
                 frameResult[idx] = MaskToken.NotNear
                 continue 
             
-            #run Face Detector 
-            bbox = trackingResult[frameId][idx].bbox 
+            # run Face Detector 
+            # bbox = trackingResult[frameId][idx].bbox 
+            # issue #7 - https://github.com/Adel-es/covid19_cctv_analyzer/issues/7 
+            '''old version
+            for bidx in range(0, 4) : 
+                if trackingResult[frameId][idx].bbox[bidx] < 0 : 
+                    trackingResult[frameId][idx].bbox[bidx] = 0
+                    print("update bbox inner value = becasuse it has negative value")
+                    print(trackingResult[frameId][idx].bbox[bidx])
+            '''
+            bbox = []
+            tid = trackingResult[frameId][idx].tid 
+            for bidx in range(0, 4) : 
+                if trackingResult[frameId][idx].bbox[bidx] < 0 : 
+                    bbox.append(0)
+                else : 
+                    bbox.append(trackingResult[frameId][idx].bbox[bidx])
+                               
+            print("<= bbox of frameID_{} and TID_{}".format(frameId,trackingResult[frameId][idx].tid))
+            print(bbox)                   
+            
             cropedPerson = raw_img[int(bbox[1]) : int(bbox[3]), int(bbox[0]) : int(bbox[2])]      
             PersonWidth = cropedPerson.shape[1]
             PersonHeight = cropedPerson.shape[0]
@@ -87,13 +109,19 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
             objList = faceDetector.inference(rgbResizedImage)    
              
             if len(objList) == 0 : 
-                frameResult[idx] = MaskToken.FaceNotFound
-                #frameResult.append(MaskToken.FaceNotFound)
+                vres = votingSystem.vote(tid, MaskToken.FaceNotFound)
+                frameResult[idx] = vres 
+                #frameResult[idx] = MaskToken.FaceNotFound
+                #if tid == 1 : 
+                #    votingSystem.show(1)
                 continue 
             
             if not 'bbox' in objList[0].keys() : 
-                frameResult[idx] = MaskToken.FaceNotFound
-                #frameResult.append(MaskToken.FaceNotFound)
+                vres = votingSystem.vote(tid, MaskToken.FaceNotFound)
+                frameResult[idx] = vres                 
+                # frameResult[idx] = MaskToken.FaceNotFound
+                #if tid == 1 : 
+                #    votingSystem.show(1)
                 continue
             
             #run MaskDetection             
@@ -112,10 +140,20 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
         for result in enumerate(faceMaskResult) : 
             while(frameResult[MRIdx] != -1) : 
                 MRIdx = MRIdx + 1 
+            tid = trackingResult[frameId][MRIdx].tid 
+            vres = None 
             if result == 1 : 
-                frameResult[MRIdx] = MaskToken.Masked 
+                vres = votingSystem.vote(tid, MaskToken.Masked) 
+                # frameResult[MRIdx] = MaskToken.Masked 
             else : 
-                frameResult[MRIdx] = MaskToken.NotMasked
+                vres = votingSystem.vote(tid, MaskToken.NotMasked)
+                # frameResult[MRIdx] = MaskToken.NotMasked
+            
+            #voting system devugging ~ 
+            #if tid == 1 : 
+            #    votingSystem.show(1)
+
+            frameResult[MRIdx] = vres 
             MRIdx = MRIdx + 1    
         
         MaskResult.append(frameResult.tolist())

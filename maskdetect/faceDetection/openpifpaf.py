@@ -19,8 +19,8 @@ class OpenPPWrapper:
         self.timer = FPST.FPSCalc()
         self.fps = 0; 
         self.net, self.processor = self.load_model()
-        self.w = 30 # TOD 
-        self.h = 60 #TODO
+        self.w = 30 # TODO 
+        self.h = 80 #TODO
         
         print("== openpifpaf face detector == ")
         print("* run on GPU : {}".format(self.gpu_num))
