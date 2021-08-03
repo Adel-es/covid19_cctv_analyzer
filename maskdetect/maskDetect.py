@@ -41,7 +41,7 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
     while(inputCapture.isOpened()) : 
         
         frameId = frameId + 1
-        frameResult = [] 
+        
         ret, raw_img = inputCapture.read() 
         
         '''        
@@ -58,19 +58,22 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
             break 
         
         if reidResult[frameId] == -1 : 
-            MaskResult.append(frameResult)
+            MaskResult.append([])
             continue
         
         if(len(trackingResult[frameId]) != len(distanceResult[frameId])) : 
             print("[ERROR] in frame{} : tracking Result and distance Result length is different!! ".format(frameId))
             print("trackingResult length is {}".format(len(trackingResult[frameId])))
             print("distanceResult length is {}".format(len(distanceResult[frameId])))
-            MaskResult.append(frameResult)        
+            MaskResult.append([])        
             continue 
-    
+        
+        frameResult = np.empty(len(trackingResult[frameId]), MaskToken)
+        frameResult.fill(-1)    
+        faces = [] 
         for idx in range(0, len(trackingResult[frameId])) : 
             if distanceResult[frameId][idx] == False : 
-                frameResult.append(MaskToken.NotNear)
+                frameResult[idx] = MaskToken.NotNear
                 continue 
             
             #run Face Detector 
@@ -84,11 +87,13 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
             objList = faceDetector.inference(rgbResizedImage)    
              
             if len(objList) == 0 : 
-                frameResult.append(MaskToken.NotMasked)
+                frameResult[idx] = MaskToken.FaceNotFound
+                #frameResult.append(MaskToken.FaceNotFound)
                 continue 
             
             if not 'bbox' in objList[0].keys() : 
-                frameResult.append(MaskToken.NotMasked)
+                frameResult[idx] = MaskToken.FaceNotFound
+                #frameResult.append(MaskToken.FaceNotFound)
                 continue
             
             #run MaskDetection             
@@ -98,16 +103,22 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
             ymin, ymax = np.multiply([face_bbox[0], face_bbox[2]], PersonHeight)
             cropedFace = cropedPerson[int(ymin):int(ymin) + (int(ymax) - int(ymin)), int(xmin):int(xmin) + (int(xmax) - int(xmin))]
             cropedFace = cv.resize(cropedFace, (maskDetector.width, maskDetector.height)) 
-            cropedFace = cropedFace/255.0                    
+            cropedFace = cropedFace/255.0 
+            faces.append(cropedFace)               
 
-            faceMaskResult, scores = maskDetector.inference(np.array([cropedFace]))
-            if faceMaskResult[0] == True : 
-                frameResult.append(MaskToken.Masked)
-            else : 
-                frameResult.append(MaskToken.NotMasked)   
+        faceMaskResult, scores = maskDetector.inference(np.array(faces))
         
-        MaskResult.append(frameResult)
+        MRIdx = 0
+        for result in enumerate(faceMaskResult) : 
+            while(frameResult[MRIdx] != -1) : 
+                MRIdx = MRIdx + 1 
+            if result == 1 : 
+                frameResult[MRIdx] = MaskToken.Masked 
+            else : 
+                frameResult[MRIdx] = MaskToken.NotMasked
+            MRIdx = MRIdx + 1    
+        
+        MaskResult.append(frameResult.tolist())
         
     inputCapture.release() 
     print("== [MaskDetect ] : finish Mask Detection == ")
-
