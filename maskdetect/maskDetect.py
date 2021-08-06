@@ -74,6 +74,7 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
         frameResult = np.empty(len(trackingResult[frameId]), MaskToken)
         frameResult.fill(-1)    
         faces = [] 
+        
         for idx in range(0, len(trackingResult[frameId])) : 
             if distanceResult[frameId][idx] == False : 
                 frameResult[idx] = MaskToken.NotNear
