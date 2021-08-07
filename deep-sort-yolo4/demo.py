@@ -43,6 +43,16 @@ output_video_path = runInfo.output_video_path
 start_frame = runInfo.start_frame
 end_frame = runInfo.end_frame
 
+def positioning_in_frame(bbox, f_width, f_height):
+    if bbox[0] < 0:
+        bbox[0] = 0
+    if bbox[2] > f_width:
+        bbox[2] = f_width
+    if bbox[1] < 0:
+        bbox[1] = 0
+    if bbox[3] > f_height:
+        bbox[3] = f_height
+
 def detectAndTrack(trackingRslt):
     # Get detection model
     yolo = YOLO()
@@ -98,6 +108,11 @@ def detectAndTrack(trackingRslt):
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
             bbox = track.to_tlbr()
+            
+            f_width  = video_capture.get(cv2.CAP_PROP_FRAME_WIDTH)   # float `width`
+            f_height = video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float `height`
+            positioning_in_frame(bbox, f_width, f_height)
+            
             aFrameTracking.append( TrackToken(bbox, track.track_id) )
         trackingRslt.append(aFrameTracking)
     # end of while()
