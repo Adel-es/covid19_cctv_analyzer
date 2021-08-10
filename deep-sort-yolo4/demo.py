@@ -181,6 +181,7 @@ if __name__ == '__main__':
         maskProc.join()
         
         #DEBUG
+        '''
         if runInfo.debug : 
             print("TrackToken : ")
             print(tracking)
@@ -190,6 +191,7 @@ if __name__ == '__main__':
             print(distance)       
             print("MaskToken : ")
             print(mask)
+        '''
         # ==== UI ====
         # Prepare input video
         video_capture = cv2.VideoCapture(input_video_path)
@@ -252,14 +254,15 @@ if __name__ == '__main__':
                     cv2.line(frame, c_stand_point, stand_point, (0, 0, 255), 2) #red 
 
                 for idx, is_masked in enumerate(aFrameMask) : 
+                    square = aFrameTracking[idx].bbox
                     if is_masked == MaskToken.NotNear : 
                         continue 
                     elif is_masked == MaskToken.NotMasked : 
-                        person = aFrameTracking[idx]
-                        cv2.rectangle(frame, (int(person.bbox[0]+5), int(person.bbox[1]+5)), (int(person.bbox[2]-5), int(person.bbox[3]-5)), (127, 127, 255), 2) #pink
+                        cv2.rectangle(frame, (int(square[0]+5), int(square[1]+5)), (int(square[2]-5), int(square[3]-5)), (127, 127, 255), 2) #light pink
                     elif is_masked == MaskToken.Masked : 
-                        person = aFrameTracking[idx]
-                        cv2.rectangle(frame, (int(person.bbox[0]+5), int(person.bbox[1]+5)), (int(person.bbox[2]-5), int(person.bbox[3]-5)), (127, 255, 127), 2) #yellowgreen 
+                        cv2.rectangle(frame, (int(square[0]+5), int(square[1]+5)), (int(square[2]-5), int(square[3]-5)), (127, 255, 127), 2) #light green 
+                    elif is_masked == MaskToken.FaceNotFound : 
+                        cv2.rectangle(frame, (int(square[0]+5), int(square[1]+5)), (int(square[2]-5), int(square[3]-5)), (0, 165, 255), 2) #orange 
             out.write(frame)
         
         out.release()

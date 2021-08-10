@@ -8,4 +8,6 @@ class TrackToken:
 class MaskToken(Enum) : 
     Masked = 1 
     NotMasked = 2 
-    NotNear = 3
+    FaceNotFound = 3
+    NotNear = 4
+    UnKnown = 5 
