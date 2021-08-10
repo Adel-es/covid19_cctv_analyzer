@@ -11,8 +11,10 @@ deep-sort-yolo4/model_data/yolo4.h5
 deep-sort-yolo4/model_data/yolov4.weights  
 deep-sort-yolo4/yolov4.weights
 #deep-sort-yolo4/tempData
+
 deep-sort-yolo4/log/*
-deep-sort-yolo4/output_yolo4.avi
+deep-sort-yolo4/log
+deep-sort-yolo4/output_yolov4.avi
 
 # top-dropblock
 top-dropblock/reid-datasets
@@ -28,13 +30,15 @@ top-dropblock/data
 top-dropblock/__pycache__/
 top-dropblock/*.py[cod]
 top-dropblock/*$py.class
-top-dropblock/torchreid/utils/__pycache__/
-top-dropblock/torchreid/optim/__pycache__/
-top-dropblock/torchreid/models/__pycache__/
-top-dropblock/torchreid/metrics/__pycache__/
-top-dropblock/torchreid/losses/__pycache__/
-top-dropblock/torchreid/engine/video/__pycache__/
-top-dropblock/torchreid/metrics/rank_cylib/__pycache__/
+top-dropblock/torchreid/utils/__pycache__/*
+top-dropblock/torchreid/optim/__pycache__/*
+top-dropblock/torchreid/models/__pycache__/*
+top-dropblock/torchreid/metrics/__pycache__/*
+top-dropblock/torchreid/losses/__pycache__/*
+top-dropblock/torchreid/engine/video/__pycache__/*
+top-dropblock/torchreid/metrics/rank_cylib/__pycache__/*
+top-dropblock/torchreid/data/__pycache__/*
+top-dropblock/torchreid/engine/__pycache__/*
 
 
 # C extensions
