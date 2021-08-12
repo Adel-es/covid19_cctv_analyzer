@@ -1,6 +1,6 @@
 model:
   name: 'top_bdnet_neck_botdropfeat_doubot'
-  load_weights: 'log/top_bdnet_neck_botdropfeat_doubot_market1501_triplet_dropbatch_dropbotfeatures_topdrop_0/model.pth.tar-400'
+  load_weights: 'weight/model.pth.tar-400' #'log/top_bdnet_neck_botdropfeat_doubot_market1501_triplet_dropbatch_dropbotfeatures_topdrop_0/model.pth.tar-400'
   
   
 data:

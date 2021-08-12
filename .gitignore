@@ -25,6 +25,7 @@ top-dropblock/.ptignore
 top-dropblock/pt-config
 top-dropblock/pt
 top-dropblock/data
+top-dropblock/weight/model.pth.tar-400
 
 # Byte-compiled / optimized / DLL files
 top-dropblock/__pycache__/
