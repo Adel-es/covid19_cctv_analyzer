@@ -347,16 +347,15 @@ class VideoDataset(Dataset):
         
 class QueryImageDatasetForConcat(Dataset):
 
-    def __init__(self, img_file, root_dir, **kwargs):
+    def __init__(self, root_dir, **kwargs):
         """
         Args:
             img_file (string): img 파일 경로
             root_dir (string): 모든 이미지가 존재하는 디렉토리 경로
             transform (callable, optional): 샘플에 적용될 Optional transform
         """
-        self.query_img = read_image(img_file)
         self.root_dir = root_dir
-        query = self.process_dir(root_dir)
+        query = self.process_dir(root_dir)      # temp
         train = self.process_dir(root_dir)      # temp
         gallery = self.process_dir(root_dir)    # temp
         

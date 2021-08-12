@@ -130,7 +130,8 @@ class ImageDataManager(DataManager):
     def __init__(self, root='', sources=None, targets=None, height=256, width=128, transforms='random_flip',
                  norm_mean=None, norm_std=None, use_gpu=True, split_id=0, combineall=False,
                  batch_size_train=32, batch_size_test=32, workers=4, num_instances=4, train_sampler='',
-                 cuhk03_labeled=False, cuhk03_classic_split=False, market1501_500k=False):
+                 cuhk03_labeled=False, cuhk03_classic_split=False, market1501_500k=False,
+                 query_image_path=''):
         
         super(ImageDataManager, self).__init__(sources=sources, targets=targets, height=height, width=width,
                                                transforms=transforms, norm_mean=norm_mean, norm_std=norm_std,
@@ -180,8 +181,7 @@ class ImageDataManager(DataManager):
             
             # build query loader
             queryset = QueryImageDatasetForConcat(
-                    img_file = root_path + "/deep-sort-yolo4/tempData/query/1_2_0.jpg",
-                    root_dir = root_path + "/deep-sort-yolo4/tempData/query",
+                    root_dir = root_path + "/" + query_image_path, #"deep-sort-yolo4/tempData/query",
                     transform = self.transform_te
                 )
             # queryset = init_image_dataset(

@@ -27,9 +27,9 @@ import imutils.video
 from PIL import Image
 import numpy as np
 
-def build_datamanager(cfg):
+def build_datamanager(cfg, query_image_path= ''):
     if cfg.data.type == 'image':
-        return torchreid.data.ImageDataManager(**imagedata_kwargs(cfg))
+        return torchreid.data.ImageDataManager(**imagedata_kwargs(cfg), query_image_path=query_image_path)
     else:
         return torchreid.data.VideoDataManager(**videodata_kwargs(cfg))
 
@@ -193,7 +193,7 @@ def main():
     engine.run(**engine_run_kwargs(cfg))
     
 
-def main_concat_with_track( config_file_path, data_root_path ):
+def main_concat_with_track( config_file_path, data_root_path , query_image_path):
     # parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # parser.add_argument('--config-file', type=str, default='', help='path to config file')
     # parser.add_argument('-s', '--sources', type=str, nargs='+', help='source datasets (delimited by space)')
@@ -230,7 +230,7 @@ def main_concat_with_track( config_file_path, data_root_path ):
     if cfg.use_gpu:
         torch.backends.cudnn.benchmark = True
     
-    datamanager = build_datamanager(cfg)
+    datamanager = build_datamanager(cfg, query_image_path)
     
     # print(type(datamanager))
     # print('Building model: {}'.format(cfg.model.name))
@@ -280,10 +280,11 @@ def read_gallery_image():
         
     return data
 
-def config_for_topdb(root_path):
+def config_for_topdb(root_path, query_image_path=''):
+    query_image_path = root_path + "/" + query_image_path
     config_file_path = root_path + "/top-dropblock/configs/im_top_bdnet_test_concat_track.yaml"
     data_root_path = root_path + "/top-dropblock/data"
-    return main_concat_with_track(config_file_path, data_root_path)
+    return main_concat_with_track(config_file_path, data_root_path, query_image_path)
 
 def _run_top_db_test(gallery_data, engine, cfg):
     # os.environ["CUDA_VISIBLE_DEVICES"] = "1, 2, 3"
@@ -298,7 +299,7 @@ def crop_frame_image(frame, bbox):
     return Image.fromarray(frame).crop( (int(bbox[2]),int(bbox[0]), int(bbox[3]),int(bbox[1])) ) # (start_x, start_y, start_x + width, start_y + height) 
     # return frame[ int(bbox[0]):int(bbox[1]), int(bbox[2]):int(bbox[3]) ] # frame[y:y+h , x:x+w]
     
-def run_top_db_test(engine, cfg, start_frame, end_frame, tracking_list, reid_list):
+def run_top_db_test(engine, cfg, start_frame, end_frame, tracking_list, reid_list, query_image_path):
     #DEBUG
     print("++++++++++++debug+++++++++++++++++")
     print(start_frame)
@@ -362,7 +363,7 @@ def run_top_db_test(engine, cfg, start_frame, end_frame, tracking_list, reid_lis
             gallery.append( (image, image_tid, cam_id) )
         
         # reid 수행
-        top1_gpid = engine.test_only(gallery_data = gallery, **engine_test_kwargs(cfg)) # top1의 index
+        top1_gpid = engine.test_only(gallery_data = gallery, query_image_path=query_image_path, **engine_test_kwargs(cfg)) # top1의 index
         top1_index = -1
         # top1 gallery의 index 탐색
         for idx, image_info in enumerate(tracking_list[frame_no]):

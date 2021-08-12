@@ -707,7 +707,7 @@ class Engine(object):
     def test_only(self, dist_metric='euclidean', normalize_feature=False,
                 visrank=False, visrankactiv = False, visrank_topk=10, save_dir='', use_metric_cuhk03=False,
                 ranks=[1, 5, 10, 20], rerank=False, maskthr=0.7, visrankactivthr=False, visdrop=False, visdroptype = 'random',
-                gallery_data=None):
+                gallery_data=None, query_image_path=''):
 
             rank1 = self._evaluate_test_only(
                     # epoch,
@@ -727,7 +727,8 @@ class Engine(object):
                     visrankactivthr=visrankactivthr,
                     visdrop=visdrop,
                     visdroptype=visdroptype,
-                    gallery_data=gallery_data # [(img, pid, camid)]
+                    gallery_data=gallery_data, # [(img, pid, camid)]
+                    query_image_path=query_image_path,
                 )
             
             return rank1
@@ -737,15 +738,15 @@ class Engine(object):
                 dist_metric='euclidean', normalize_feature=False, visrank=False, visrankactiv = False,
                 visrank_topk=10, save_dir='', use_metric_cuhk03=False, ranks=[1, 5, 10, 20],
                 rerank=False, visrankactivthr = False, maskthr=0.7, visdrop=False, visdroptype='random',
-                gallery_data=None):
+                gallery_data=None, query_image_path=''):
         batch_time = AverageMeter()
 
         print('Extracting features from query set ...')
         qf, qa, q_pids, q_camids, qm = [], [], [], [], [] # query features, query activations, query person IDs, query camera IDs and image drop masks
 
-        query_dir_path = root_path + "/deep-sort-yolo4/tempData/query/"
+        query_dir_path = root_path + "/" + query_image_path
         query_img_path = os.listdir(query_dir_path)
-        print("Num of query set: ", len(query_img_path))
+        # print("Num of query set: ", len(query_img_path))
         for img_path in query_img_path:
             # img_path = query_img_path[0]
             imgs = read_image(query_dir_path + img_path)    # imgs type : <class 'PIL.Image.Image'>
