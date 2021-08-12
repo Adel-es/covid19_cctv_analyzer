@@ -83,13 +83,14 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
             # run Face Detector 
             # bbox = trackingResult[frameId][idx].bbox 
             # issue #7 - https://github.com/Adel-es/covid19_cctv_analyzer/issues/7 
-            '''old version
+            '''
+            old version
             for bidx in range(0, 4) : 
                 if trackingResult[frameId][idx].bbox[bidx] < 0 : 
                     trackingResult[frameId][idx].bbox[bidx] = 0
                     print("update bbox inner value = becasuse it has negative value")
                     print(trackingResult[frameId][idx].bbox[bidx])
-            '''
+
             bbox = []
             tid = trackingResult[frameId][idx].tid 
             for bidx in range(0, 4) : 
@@ -97,8 +98,10 @@ def runMaskDetect(trackingResult, reidResult, distanceResult, MaskResult) :
                     bbox.append(0)
                 else : 
                     bbox.append(trackingResult[frameId][idx].bbox[bidx])
-                               
-            print("<= bbox of frameID_{} and TID_{}".format(frameId,trackingResult[frameId][idx].tid))
+            '''   
+            tid = trackingResult[frameId][idx].tid 
+            bbox = trackingResult[frameId][idx].bbox                
+            print("<= bbox of frameID_{} and TID_{}".format(frameId, tid))
             print(bbox)                   
             
             cropedPerson = raw_img[int(bbox[1]) : int(bbox[3]), int(bbox[0]) : int(bbox[2])]      
