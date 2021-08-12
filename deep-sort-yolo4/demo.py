@@ -148,7 +148,11 @@ def personReid(trackingRslt, reidRslt):
     # TypeError: forward() missing 1 required positional argument: 'x'
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     top_db_engine, top_db_cfg = config_for_topdb( root_path , query_image_path=query_image_path)
-    run_top_db_test(engine=top_db_engine, cfg=top_db_cfg, start_frame=start_frame, end_frame=end_frame, tracking_list=trackingRslt, reid_list=reidRslt, query_image_path=query_image_path)
+    run_top_db_test(engine=top_db_engine, cfg=top_db_cfg, 
+                    start_frame=start_frame, end_frame=end_frame,
+                    input_video_path=input_video_path, output_video_path=output_video_path, 
+                    tracking_list=trackingRslt, reid_list=reidRslt, 
+                    query_image_path=query_image_path)
     # 지금 reidRslt에서 확진자가 없는 경우(-1)는 나오지 않는다. (reid 정확성 문제 때문에)
 
 if __name__ == '__main__':
@@ -178,6 +182,9 @@ if __name__ == '__main__':
         
         maskProc.start() 
         maskProc.join()
+        
+        print('tracking len : ', len(tracking))
+        print('reid len : ', len(reid))
         
         #DEBUG
         '''

@@ -299,7 +299,9 @@ def crop_frame_image(frame, bbox):
     return Image.fromarray(frame).crop( (int(bbox[2]),int(bbox[0]), int(bbox[3]),int(bbox[1])) ) # (start_x, start_y, start_x + width, start_y + height) 
     # return frame[ int(bbox[0]):int(bbox[1]), int(bbox[2]):int(bbox[3]) ] # frame[y:y+h , x:x+w]
     
-def run_top_db_test(engine, cfg, start_frame, end_frame, tracking_list, reid_list, query_image_path):
+def run_top_db_test(engine, cfg, start_frame, end_frame, 
+                    input_video_path, output_video_path, 
+                    tracking_list, reid_list, query_image_path):
     #DEBUG
     print("++++++++++++debug+++++++++++++++++")
     print(start_frame)
@@ -310,11 +312,10 @@ def run_top_db_test(engine, cfg, start_frame, end_frame, tracking_list, reid_lis
     writeVideo_flag = True
     asyncVideo_flag = False
 
-    file_path = 'video.webm'
     if asyncVideo_flag :
-        video_capture = VideoCaptureAsync(file_path)
+        video_capture = VideoCaptureAsync(input_video_path)
     else:
-        video_capture = cv2.VideoCapture(file_path)
+        video_capture = cv2.VideoCapture(input_video_path)
 
     if asyncVideo_flag:
         video_capture.start()
@@ -327,7 +328,7 @@ def run_top_db_test(engine, cfg, start_frame, end_frame, tracking_list, reid_lis
             w = int(video_capture.get(3))
             h = int(video_capture.get(4))
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter('output_yolov4.avi', fourcc, 30, (w, h))
+        out = cv2.VideoWriter(output_video_path, fourcc, 30, (w, h))
         frame_index = -1
 
     fps = 0.0
