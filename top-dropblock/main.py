@@ -194,16 +194,6 @@ def main():
     
 
 def main_concat_with_track( config_file_path, data_root_path , query_image_path):
-    # parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    # parser.add_argument('--config-file', type=str, default='', help='path to config file')
-    # parser.add_argument('-s', '--sources', type=str, nargs='+', help='source datasets (delimited by space)')
-    # parser.add_argument('-t', '--targets', type=str, nargs='+', help='target datasets (delimited by space)')
-    # parser.add_argument('--transforms', type=str, nargs='+', help='data augmentation')
-    # parser.add_argument('--root', type=str, default='', help='path to data root')
-    # parser.add_argument('--gpu-devices', type=str, default='',)
-    # parser.add_argument('opts', default=None, nargs=argparse.REMAINDER, help='Modify config options using the command-line')
-    # args = parser.parse_args()
-
     cfg = get_default_config()
     cfg.use_gpu = torch.cuda.is_available()
     # if args.config_file:
@@ -290,15 +280,10 @@ def _run_top_db_test(gallery_data, engine, cfg):
     # os.environ["CUDA_VISIBLE_DEVICES"] = "1, 2, 3"
     engine.test_only(gallery_data = gallery_data, **engine_test_kwargs(cfg))
 
-# def run_top_db_test(engine, cfg):
-#     # os.environ["CUDA_VISIBLE_DEVICES"] = "1, 2, 3"
-#     gallery_data = read_gallery_image() # type : [(img, pid, camid), ...]
-#     engine.test_only(gallery_data = gallery_data, **engine_test_kwargs(cfg))
-
 def crop_frame_image(frame, bbox):
-    return Image.fromarray(frame).crop( (int(bbox[2]),int(bbox[0]), int(bbox[3]),int(bbox[1])) ) # (start_x, start_y, start_x + width, start_y + height) 
-    # return frame[ int(bbox[0]):int(bbox[1]), int(bbox[2]):int(bbox[3]) ] # frame[y:y+h , x:x+w]
-    
+    # bbox[0,1,2,3] = [x,y,x+w,y+h]
+    return Image.fromarray(frame).crop( (int(bbox[0]),int(bbox[1]), int(bbox[2]),int(bbox[3])) ) # (start_x, start_y, start_x + width, start_y + height) 
+     
 def run_top_db_test(engine, cfg, start_frame, end_frame, 
                     input_video_path, output_video_path, 
                     tracking_list, reid_list, query_image_path):
@@ -334,10 +319,8 @@ def run_top_db_test(engine, cfg, start_frame, end_frame,
     fps = 0.0
     fps_imutils = imutils.video.FPS().start()
 
-    # os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1, 2, 3, 4"
-    # top_db_engine, top_db_cfg = config_for_topdb( root_path )
     cam_id = 0;     # 임의로 cam_no 정의
-    frame_no = -1   # 임의로 frame_no 정의
+    frame_no = -1   
     
     while True:
         ret, frame = video_capture.read()  # frame shape 640*480*3
@@ -379,15 +362,6 @@ def run_top_db_test(engine, cfg, start_frame, end_frame,
         #             +str( tracking_list[frame_no][reid_result].tid )+'_'+str(frame_no)+'.jpg', #gpid_frameno.jpg
         #             np.asarray( crop_image , dtype=np.uint8) )
 
-        # 결과 확인용 - top1의 사진 출력
-        # if reid_result != []:
-        #     for reid in reid_result:
-        #         crop_image = crop_frame_image(frame, tracking_list[frame_no][reid[0]].bbox)
-        #         # cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/top-dropblock/data/equal_query/'
-        #         cv2.imwrite('/home/gram/JCW/covid19_cctv_analyzer_multi_proc/deep-sort-yolo4/tempData/equalquery/'
-        #                 +str( tracking_list[frame_no][reid[0]].tid )+'_'+str(reid[1])+'_'+str(frame_no)+'.jpg', #gpid_qpid_frameno.jpg
-        #                 np.asarray( crop_image , dtype=np.uint8) )
-        
         if writeVideo_flag: # and not asyncVideo_flag:
             # save a frame
             out.write(frame)

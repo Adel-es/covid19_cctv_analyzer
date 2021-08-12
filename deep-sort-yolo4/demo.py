@@ -25,7 +25,7 @@ from videocaptureasync import VideoCaptureAsync
 
 import os, sys
 # 상위 디렉토리 절대 경로 추가
-# ../JCW/covid19_cctv_analyzer
+# ~/covid19_cctv_analyzer
 root_path = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(root_path)
 sys.path.append(root_path + '/top-dropblock')
