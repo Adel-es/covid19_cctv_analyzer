@@ -5,7 +5,11 @@ gpu_usage_check.py
 .vscode
 test
 *.pyc 
+<<<<<<< HEAD
 *.avi
+=======
+.avi
+>>>>>>> 0421ac1183eca7b40e9aca2dca16d22e29db8115
 
 # tempData
 log/*
@@ -21,8 +25,13 @@ deep_sort_yolo4/yolov4.weights
 deep-sort-yolo4/model_data/yolo4.h5
 deep-sort-yolo4/model_data/yolov4.weights
 deep-sort-yolo4/tempData
+<<<<<<< HEAD
 deep-sort-yolo4/*.mp4
 deep-sort-yolo4/*.avi
+=======
+deep-sort-yolo4/.mp4
+deep-sort-yolo4/.avi
+>>>>>>> 0421ac1183eca7b40e9aca2dca16d22e29db8115
 
 ## personReid/LA_Transformer
 # model / data
