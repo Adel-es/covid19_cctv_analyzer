@@ -30,13 +30,6 @@ VECT_HEIGTH = 10
 
 from gpuinfo import GPUInfo
 
-# 상위 디렉토리 절대 경로 추가
-# ~/covid19_cctv_analyzer
-root_path = os.path.dirname(
-    os.path.abspath(os.path.dirname(
-        os.path.abspath(os.path.dirname(
-            os.path.abspath(os.path.dirname(__file__)))))))
-
 class Engine(object):
     r"""A generic base Engine class for both image- and video-reid.
 
@@ -744,6 +737,13 @@ class Engine(object):
         print('Extracting features from query set ...')
         qf, qa, q_pids, q_camids, qm = [], [], [], [], [] # query features, query activations, query person IDs, query camera IDs and image drop masks
 
+        # 상위 디렉토리 절대 경로 추가
+        # ~/covid19_cctv_analyzer
+        root_path = os.path.dirname(
+            os.path.abspath(os.path.dirname(
+                os.path.abspath(os.path.dirname(
+                    os.path.abspath(os.path.dirname(
+                        os.path.abspath(os.path.dirname(__file__)))))))))
         query_dir_path = root_path + "/" + query_image_path
         query_img_path = os.listdir(query_dir_path)
         # print("Num of query set: ", len(query_img_path))
@@ -751,7 +751,9 @@ class Engine(object):
             # img_path = query_img_path[0]
             imgs = read_image(query_dir_path + img_path)    # imgs type : <class 'PIL.Image.Image'>
             imgs = self.datamanager.transform_te(imgs)      # imgs type : <class 'torch.Tensor'>
+            print("* query size: ", imgs.size())
             imgs = torch.unsqueeze(imgs, 0)                 # 차원을 강제로 늘려줌
+            print("* unsqueeze query size: ", imgs.size())
             pids = [int(img_path.split("_")[0])]
             camids = [0]                                    # list에 넣어줌 , 지금은 임의로 정의
             
@@ -764,6 +766,7 @@ class Engine(object):
                 imgs = imgs.cuda()
             end = time.time()
             features = self._extract_features(imgs)
+            print("* feature size: ", features.size())
             activations = self._extract_activations(imgs)
             dropmask = self._extract_drop_masks(imgs, visdrop, visdroptype)
             batch_time.update(time.time() - end)
@@ -775,6 +778,7 @@ class Engine(object):
             q_camids.extend(camids)
         
         qf = torch.cat(qf, 0)
+        print("* query features size: ", qf.size())
         qm = torch.cat(qm, 0)
         qa = torch.cat(qa, 0)
         q_pids = np.asarray(q_pids)
