@@ -5,6 +5,7 @@ gpu_usage_check.py
 .vscode
 test
 *.pyc 
+.avi
 
 # tempData
 log/*
@@ -15,6 +16,13 @@ log
 deep_sort_yolo4/model_data/yolo4.h5
 deep_sort_yolo4/model_data/yolov4.weights  
 deep_sort_yolo4/yolov4.weights
+
+# difference dir name
+deep-sort-yolo4/model_data/yolo4.h5
+deep-sort-yolo4/model_data/yolov4.weights
+deep-sort-yolo4/tempData
+deep-sort-yolo4/.mp4
+deep-sort-yolo4/.avi
 
 ## personReid/LA_Transformer
 # model / data
