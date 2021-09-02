@@ -5,121 +5,264 @@ gpu_usage_check.py
 .vscode
 test
 *.pyc 
+*.avi
 
-# deep-sort-yolo4
+# tempData
+log/*
+log
+# data
+
+# deep_sort_yolo4
+deep_sort_yolo4/model_data/yolo4.h5
+deep_sort_yolo4/model_data/yolov4.weights  
+deep_sort_yolo4/yolov4.weights
+
+# difference dir name
 deep-sort-yolo4/model_data/yolo4.h5
-deep-sort-yolo4/model_data/yolov4.weights  
-deep-sort-yolo4/yolov4.weights
-#deep-sort-yolo4/tempData
+deep-sort-yolo4/model_data/yolov4.weights
+deep-sort-yolo4/tempData
+deep-sort-yolo4/*.mp4
+deep-sort-yolo4/*.avi
 
-deep-sort-yolo4/log/*
-deep-sort-yolo4/log
-deep-sort-yolo4/output_yolov4.avi
-
-# top-dropblock
-top-dropblock/reid-datasets
-top-dropblock/tmp
-top-dropblock/.ptconfig
-top-dropblock/.vscode
-top-dropblock/.ptignore
-top-dropblock/pt-config
-top-dropblock/pt
-top-dropblock/data
-top-dropblock/weight/model.pth.tar-400
+## personReid/LA_Transformer
+# model / data
+personReid/LA_Transformer/data/
+personReid/LA_Transformer/model/
 
 # Byte-compiled / optimized / DLL files
-top-dropblock/__pycache__/
-top-dropblock/*.py[cod]
-top-dropblock/*$py.class
-top-dropblock/torchreid/utils/__pycache__/*
-top-dropblock/torchreid/optim/__pycache__/*
-top-dropblock/torchreid/models/__pycache__/*
-top-dropblock/torchreid/metrics/__pycache__/*
-top-dropblock/torchreid/losses/__pycache__/*
-top-dropblock/torchreid/engine/video/__pycache__/*
-top-dropblock/torchreid/metrics/rank_cylib/__pycache__/*
-top-dropblock/torchreid/data/__pycache__/*
-top-dropblock/torchreid/engine/__pycache__/*
-
+personReid/LA_Transformer/__pycache__/
+personReid/LA_Transformer/*.py[cod]
+personReid/LA_Transformer/*$py.class
 
 # C extensions
-top-dropblock/*.so
+personReid/LA_Transformer/*.so
 
 # Distribution / packaging
-top-dropblock/.Python
-top-dropblock/build/
-top-dropblock/develop-eggs/
-top-dropblock/dist/
-top-dropblock/downloads/
-top-dropblock/eggs/
-top-dropblock/.eggs/
-top-dropblock/lib/
-top-dropblock/lib64/
-top-dropblock/parts/
-top-dropblock/sdist/
-top-dropblock/var/
-top-dropblock/wheels/
-top-dropblock/pip-wheel-metadata/
-top-dropblock/share/python-wheels/
-top-dropblock/*.egg-info/
-top-dropblock/.installed.cfg
-top-dropblock/*.egg
-top-dropblock/MANIFEST
+personReid/LA_Transformer/.Python
+personReid/LA_Transformer/build/
+personReid/LA_Transformer/develop-eggs/
+personReid/LA_Transformer/dist/
+personReid/LA_Transformer/downloads/
+personReid/LA_Transformer/eggs/
+personReid/LA_Transformer/.eggs/
+personReid/LA_Transformer/lib/
+personReid/LA_Transformer/lib64/
+personReid/LA_Transformer/parts/
+personReid/LA_Transformer/sdist/
+personReid/LA_Transformer/var/
+personReid/LA_Transformer/wheels/
+personReid/LA_Transformer/pip-wheel-metadata/
+personReid/LA_Transformer/share/python-wheels/
+personReid/LA_Transformer/*.egg-info/
+personReid/LA_Transformer/.installed.cfg
+personReid/LA_Transformer/*.egg
+personReid/LA_Transformer/MANIFEST
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
-top-dropblock/*.manifest
-top-dropblock/*.spec
+personReid/LA_Transformer/*.manifest
+personReid/LA_Transformer/*.spec
 
 # Installer logs
-top-dropblock/pip-log.txt
-top-dropblock/pip-delete-this-directory.txt
+personReid/LA_Transformer/pip-log.txt
+personReid/LA_Transformer/pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-top-dropblock/htmlcov/
-top-dropblock/.tox/
-top-dropblock/.nox/
-top-dropblock/.coverage
-top-dropblock/.coverage.*
-top-dropblock/.cache
-top-dropblock/nosetests.xml
-top-dropblock/coverage.xml
-top-dropblock/*.cover
-top-dropblock/.hypothesis/
-top-dropblock/.pytest_cache/
+personReid/LA_Transformer/htmlcov/
+personReid/LA_Transformer/.tox/
+personReid/LA_Transformer/.nox/
+personReid/LA_Transformer/.coverage
+personReid/LA_Transformer/.coverage.*
+personReid/LA_Transformer/.cache
+personReid/LA_Transformer/nosetests.xml
+personReid/LA_Transformer/coverage.xml
+personReid/LA_Transformer/*.cover
+personReid/LA_Transformer/*.py,cover
+personReid/LA_Transformer/.hypothesis/
+personReid/LA_Transformer/.pytest_cache/
 
 # Translations
-top-dropblock/*.mo
-top-dropblock/*.pot
+personReid/LA_Transformer/*.mo
+personReid/LA_Transformer/*.pot
 
 # Django stuff:
-top-dropblock/*.log
-top-dropblock/local_settings.py
-top-dropblock/db.sqlite3
+personReid/LA_Transformer/*.log
+personReid/LA_Transformer/local_settings.py
+personReid/LA_Transformer/db.sqlite3
+personReid/LA_Transformer/db.sqlite3-journal
 
 # Flask stuff:
-top-dropblock/instance/
-top-dropblock/.webassets-cache
+personReid/LA_Transformer/instance/
+personReid/LA_Transformer/.webassets-cache
 
 # Scrapy stuff:
-top-dropblock/.scrapy
+personReid/LA_Transformer/.scrapy
 
 # Sphinx documentation
-top-dropblock/docs/_build/
+personReid/LA_Transformer/docs/_build/
 
 # PyBuilder
-top-dropblock/target/
+personReid/LA_Transformer/target/
 
 # Jupyter Notebook
-top-dropblock/.ipynb_checkpoints
+personReid/LA_Transformer/.ipynb_checkpoints
 
 # IPython
-top-dropblock/profile_default/
-top-dropblock/ipython_config.py
+personReid/LA_Transformer/profile_default/
+personReid/LA_Transformer/ipython_config.py
 
 # pyenv
-top-dropblock/.python-version
+personReid/LA_Transformer/.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+personReid/LA_Transformer/__pypackages__/
+
+# Celery stuff
+personReid/LA_Transformer/celerybeat-schedule
+personReid/LA_Transformer/celerybeat.pid
+
+# SageMath parsed files
+personReid/LA_Transformer/*.sage.py
+
+# Environments
+personReid/LA_Transformer/.env
+personReid/LA_Transformer/.venv
+personReid/LA_Transformer/env/
+personReid/LA_Transformer/venv/
+personReid/LA_Transformer/ENV/
+personReid/LA_Transformer/env.bak/
+personReid/LA_Transformer/venv.bak/
+
+# Spyder project settings
+personReid/LA_Transformer/.spyderproject
+personReid/LA_Transformer/.spyproject
+
+# Rope project settings
+personReid/LA_Transformer/.ropeproject
+
+# mkdocs documentation
+personReid/LA_Transformer//site
+
+# mypy
+personReid/LA_Transformer/.mypy_cache/
+personReid/LA_Transformer/.dmypy.json
+personReid/LA_Transformer/dmypy.json
+
+# Pyre type checker
+personReid/LA_Transformer/.pyre/
+
+## top-dropblock
+personReid/top-dropblock/reid-datasets
+personReid/top-dropblock/tmp
+personReid/top-dropblock/.ptconfig
+personReid/top-dropblock/.vscode
+personReid/top-dropblock/.ptignore
+personReid/top-dropblock/pt-config
+personReid/top-dropblock/pt
+personReid/top-dropblock/data
+personReid/top-dropblock/weight/model.pth.tar-400
+
+# Byte-compiled / optimized / DLL files
+personReid/top-dropblock/__pycache__/
+personReid/top-dropblock/*.py[cod]
+personReid/top-dropblock/*$py.class
+personReid/top-dropblock/torchreid/utils/__pycache__/*
+personReid/top-dropblock/torchreid/optim/__pycache__/*
+personReid/top-dropblock/torchreid/models/__pycache__/*
+personReid/top-dropblock/torchreid/metrics/__pycache__/*
+personReid/top-dropblock/torchreid/losses/__pycache__/*
+personReid/top-dropblock/torchreid/engine/video/__pycache__/*
+personReid/top-dropblock/torchreid/metrics/rank_cylib/__pycache__/*
+personReid/top-dropblock/torchreid/data/__pycache__/*
+personReid/top-dropblock/torchreid/engine/__pycache__/*
+
+
+# C extensions
+personReid/top-dropblock/*.so
+
+# Distribution / packaging
+personReid/top-dropblock/.Python
+personReid/top-dropblock/build/
+personReid/top-dropblock/develop-eggs/
+personReid/top-dropblock/dist/
+personReid/top-dropblock/downloads/
+personReid/top-dropblock/eggs/
+personReid/top-dropblock/.eggs/
+personReid/top-dropblock/lib/
+personReid/top-dropblock/lib64/
+personReid/top-dropblock/parts/
+personReid/top-dropblock/sdist/
+personReid/top-dropblock/var/
+personReid/top-dropblock/wheels/
+personReid/top-dropblock/pip-wheel-metadata/
+personReid/top-dropblock/share/python-wheels/
+personReid/top-dropblock/*.egg-info/
+personReid/top-dropblock/.installed.cfg
+personReid/top-dropblock/*.egg
+personReid/top-dropblock/MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+personReid/top-dropblock/*.manifest
+personReid/top-dropblock/*.spec
+
+# Installer logs
+personReid/top-dropblock/pip-log.txt
+personReid/top-dropblock/pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+personReid/top-dropblock/htmlcov/
+personReid/top-dropblock/.tox/
+personReid/top-dropblock/.nox/
+personReid/top-dropblock/.coverage
+personReid/top-dropblock/.coverage.*
+personReid/top-dropblock/.cache
+personReid/top-dropblock/nosetests.xml
+personReid/top-dropblock/coverage.xml
+personReid/top-dropblock/*.cover
+personReid/top-dropblock/.hypothesis/
+personReid/top-dropblock/.pytest_cache/
+
+# Translations
+personReid/top-dropblock/*.mo
+personReid/top-dropblock/*.pot
+
+# Django stuff:
+personReid/top-dropblock/*.log
+personReid/top-dropblock/local_settings.py
+personReid/top-dropblock/db.sqlite3
+
+# Flask stuff:
+personReid/top-dropblock/instance/
+personReid/top-dropblock/.webassets-cache
+
+# Scrapy stuff:
+personReid/top-dropblock/.scrapy
+
+# Sphinx documentation
+personReid/top-dropblock/docs/_build/
+
+# PyBuilder
+personReid/top-dropblock/target/
+
+# Jupyter Notebook
+personReid/top-dropblock/.ipynb_checkpoints
+
+# IPython
+personReid/top-dropblock/profile_default/
+personReid/top-dropblock/ipython_config.py
+
+# pyenv
+personReid/top-dropblock/.python-version
 
 # pipenv
 #   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
@@ -129,54 +272,54 @@ top-dropblock/.python-version
 #Pipfile.lock
 
 # celery beat schedule file
-top-dropblock/celerybeat-schedule
+personReid/top-dropblock/celerybeat-schedule
 
 # SageMath parsed files
-top-dropblock/*.sage.py
+personReid/top-dropblock/*.sage.py
 
 # Environments
-top-dropblock/.env
-top-dropblock/.venv
-top-dropblock/env/
-top-dropblock/venv/
-top-dropblock/ENV/
-top-dropblock/env.bak/
-top-dropblock/venv.bak/
+personReid/top-dropblock/.env
+personReid/top-dropblock/.venv
+personReid/top-dropblock/env/
+personReid/top-dropblock/venv/
+personReid/top-dropblock/ENV/
+personReid/top-dropblock/env.bak/
+personReid/top-dropblock/venv.bak/
 
 # Spyder project settings
-top-dropblock/.spyderproject
-top-dropblock/.spyproject
+personReid/top-dropblock/.spyderproject
+personReid/top-dropblock/.spyproject
 
 # Rope project settings
-top-dropblock/.ropeproject
+personReid/top-dropblock/.ropeproject
 
 # mkdocs documentation
-top-dropblock//site
+personReid/top-dropblock//site
 
 # mypy
-top-dropblock/.mypy_cache/
-top-dropblock/.dmypy.json
-top-dropblock/dmypy.json
+personReid/top-dropblock/.mypy_cache/
+personReid/top-dropblock/.dmypy.json
+personReid/top-dropblock/dmypy.json
 
 # Pyre type checker
-top-dropblock/.pyre/
+personReid/top-dropblock/.pyre/
 
 # Cython eval code
-top-dropblock/*.c
-top-dropblock/*.html
+personReid/top-dropblock/*.c
+personReid/top-dropblock/*.html
 
 # OS X
-top-dropblock/.DS_Store
-top-dropblock/.Spotlight-V100
-top-dropblock/.Trashes
-top-dropblock/._*
+personReid/top-dropblock/.DS_Store
+personReid/top-dropblock/.Spotlight-V100
+personReid/top-dropblock/.Trashes
+personReid/top-dropblock/._*
 
 # ReID
-top-dropblock/reid-data/
-top-dropblock/log/
-top-dropblock/saved-models/
-top-dropblock/model-zoo/
-top-dropblock/debug*
+personReid/top-dropblock/reid-data/
+personReid/top-dropblock/log/
+personReid/top-dropblock/saved-models/
+personReid/top-dropblock/model-zoo/
+personReid/top-dropblock/debug*
 
 #mask detection
 maskdetect/__pycache__/
