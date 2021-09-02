@@ -272,8 +272,8 @@ def read_gallery_image():
 
 def config_for_topdb(root_path, query_image_path=''):
     query_image_path = root_path + "/" + query_image_path
-    config_file_path = root_path + "/top-dropblock/configs/im_top_bdnet_test_concat_track.yaml"
-    data_root_path = root_path + "/top-dropblock/data"
+    config_file_path = root_path + "/personReid/top-dropblock/configs/im_top_bdnet_test_concat_track.yaml"
+    data_root_path = root_path + "/personReid/top-dropblock/data"
     return main_concat_with_track(config_file_path, data_root_path, query_image_path)
 
 def _run_top_db_test(gallery_data, engine, cfg):
